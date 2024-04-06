@@ -1,0 +1,32 @@
+http://localhost:9990
+
+--
+
+--
+GET /
+
+--
+POST /init
+
+{
+    "api_key": "******************",
+    "contract_id": 124,
+    "clinic_id": 123,
+    "agent_token": "ASd",
+    "patient_agent_token": "asdas",
+    "doctor_agent_token": "asdasD",
+    "agent_id": 321,
+    "agent_name": "asdasdAS",
+    "locale": "RU-ru"
+}
+
+
+--
+POST /status
+
+{
+    "api_key": "********************"
+}
+
+
+

@@ -1,0 +1,17 @@
+package view
+
+templ Settings(patientName string) {
+    @Base("Подключение КТГ-монитора") {
+        <div>
+            <h1>Patient Name: { patientName }</h1>
+
+            <span>Add Libre Link up account</span>
+            <form method="POST">
+                email: <input type="text" name="email" />
+                password: <input type="password" name="password" />
+
+                <input type="submit" name="Sumbit" />
+            </form>
+        </div>
+    }
+}
