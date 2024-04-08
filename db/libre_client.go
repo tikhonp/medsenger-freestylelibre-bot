@@ -3,14 +3,15 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/TikhonP/maigo"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/util"
+	util "github.com/TikhonP/medsenger-freestylelibre-bot/util/libre_client"
 	"github.com/google/uuid"
 )
 
+// LibreClient contains information about LibreLinkUp account connected to contraact.
 type LibreClient struct {
 	Id           int        `db:"id"`
 	Email        string     `db:"email"`
@@ -18,10 +19,13 @@ type LibreClient struct {
 	Token        *string    `db:"token"`
 	TokenExpires *time.Time `db:"token_expires"`
 	LastSyncDate *time.Time `db:"last_sync_date"`
-	PatientId    *string    `db:"patient_id"`
+	PatientId    *uuid.UUID `db:"patient_id"`
+	ContractId   int        `db:"contract_id"`
 }
 
 var ErrLibreClientNotFound = errors.New("Libre Client not flound")
+
+var llum = util.NewLibreLinkUpManager()
 
 func NewLibreClient(email string, password string, contractId int) (*LibreClient, error) {
 	contract, err := GetContractById(contractId)
@@ -41,36 +45,37 @@ func NewLibreClient(email string, password string, contractId int) (*LibreClient
 			libreClient.Password = password
 			libreClient.Token = nil
 			err = libreClient.Save()
-			fmt.Println("Save libre client")
 			return libreClient, err
 		}
 	}
-	query := `INSERT INTO libre_clients (email, password) VALUES ($1, $2) RETURNING *`
+	query := `INSERT INTO libre_clients (email, password, contract_id) VALUES ($1, $2, $3) RETURNING *`
 	var lc LibreClient
-	err = db.Get(&lc, query, email, password)
-	fmt.Println("inset new libre client")
+	err = db.Get(&lc, query, email, password, contractId)
 	if err != nil {
 		return nil, err
 	}
 	contract.LibreClient = &lc.Id
 	err = contract.Save()
-	fmt.Println("save contract")
 	return &lc, err
+}
+
+func (lc *LibreClient) Contract() (*Contract, error) {
+	return GetContractById(lc.ContractId)
 }
 
 func (lc *LibreClient) Save() error {
 	query := `
-		INSERT INTO libre_clients (id, email, password, token, token_expires, last_sync_date, patient_id)
-		VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id)
-		DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, token = EXCLUDED.token, token_expires = EXCLUDED.token_expires, last_sync_date = EXCLUDED.last_sync_date, patient_id = EXCLUDED.patient_id
+		INSERT INTO libre_clients (id, email, password, token, token_expires, last_sync_date, patient_id, contract_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id)
+		DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, token = EXCLUDED.token, token_expires = EXCLUDED.token_expires, last_sync_date = EXCLUDED.last_sync_date, patient_id = EXCLUDED.patient_id, contract_id = EXCLUDED.contract_id
 	`
-	_, err := db.Exec(query, lc.Id, lc.Email, lc.Password, lc.Token, lc.TokenExpires, lc.LastSyncDate, lc.PatientId)
+	_, err := db.Exec(query, lc.Id, lc.Email, lc.Password, lc.Token, lc.TokenExpires, lc.LastSyncDate, lc.PatientId, lc.ContractId)
 	return err
 }
 
 func GetLibreClientById(id int) (*LibreClient, error) {
 	libreClient := new(LibreClient)
-	err := db.Get(libreClient, "SELECT * FROM libre_clients WHERE id = $1", id)
+	err := db.Get(libreClient, `SELECT * FROM libre_clients WHERE id = $1`, id)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrLibreClientNotFound
 	}
@@ -86,82 +91,91 @@ func GetActiveLibreClientToFetch() ([]LibreClient, error) {
     `
 	clients := []LibreClient{}
 	err := db.Select(&clients, query)
-	// rows, err := db.Query(query)
-	// defer rows.Close()
-	// for rows.Next() {
-	// 	var (
-	// 		name string
-	// 		age  int
-	// 	)
-	// 	if err := rows.Scan(&name, &age); err != nil {
-	// 		panic(err)
-	// 	}
-	// 	fmt.Printf("%s is %d\n", name, age)
-	// }
-	// if err := rows.Err(); err != nil {
-	// 	panic(err)
-	// }
-
 	return clients, err
 }
 
-func (lc *LibreClient) FetchData(mc *maigo.Client) error {
-	llum := util.NewLibreLinkUpManager()
-
-	fmt.Println("Fetching token...")
-
-	// fetch token
-	if !(lc.Token != nil && time.Now().Before(*lc.TokenExpires)) {
-		fmt.Println("fetch")
-		user, err := llum.Login(lc.Email, lc.Password)
-		if err != nil {
-			return err
-		}
-		fmt.Println("saving")
-		lc.Token = &user.AuthTicket.Token
-		lc.TokenExpires = &user.AuthTicket.Expires.Time
-		fmt.Printf("lc.Token: %v\n", *lc.Token)
-		fmt.Printf("lc: %v\n", lc)
-		fmt.Printf("user: %v\n", user.AuthTicket.Expires.Time)
-		err = lc.Save()
-		if err != nil {
-			return err
-		}
-	}
-
-	fmt.Println("Fetching patient id...")
-
-	// fetch patient id
-	if lc.PatientId == nil {
-		connections, err := llum.FetchConnections(*lc.Token)
-		if err != nil {
-			return err
-		}
-		if len(connections.Data) == 0 {
-			return errors.New("Account connections is empty")
-		}
-		patientId := connections.Data[0].PatientId.String()
-		lc.PatientId = &patientId
-		err = lc.Save()
-		if err != nil {
-			return err
-		}
-	}
-
-	fmt.Println("Fetching data...")
-
-	// fetch data
-	patientUUID, err := uuid.Parse(*lc.PatientId)
+func (lc *LibreClient) fetchToken() error {
+	user, err := llum.Login(lc.Email, lc.Password)
 	if err != nil {
 		return err
 	}
-	graph, err := llum.FetchData(patientUUID, *lc.Token)
+	lc.Token = &user.AuthTicket.Token
+	lc.TokenExpires = &user.AuthTicket.Expires.Time
+	return lc.Save()
+}
 
-	println("MEASUREMENTS")
+func (lc *LibreClient) FetchPatientId() error {
+	connections, err := llum.FetchConnections(*lc.Token)
+	if err != nil {
+		return err
+	}
+	if len(connections) == 0 {
+		return errors.New("Account connections is empty")
+	}
+	lc.PatientId = &connections[0].PatientId
+	return lc.Save()
+}
 
-	for _, item := range graph.Data.Mesurements {
-		fmt.Printf("%+v\n", item)
+// function for get the latest FactoryTimestamp from []util.GlucoseMeasurement
+func getLatestTimestamp(data []util.GlucoseMeasurement) *time.Time {
+	if len(data) == 0 {
+		return nil
+	}
+	timestamp := data[0].FactoryTimestamp.Time
+	for _, item := range data {
+		if item.FactoryTimestamp.Time.After(timestamp) {
+			timestamp = item.FactoryTimestamp.Time
+		}
+	}
+	return &timestamp
+}
+
+func (lc *LibreClient) FetchData(mc *maigo.Client) error {
+	log.Printf("Fetching data for contract %d", lc.ContractId)
+
+	now := time.Now().UTC()
+
+	// fetch token
+	if !(lc.Token != nil && now.Before(*lc.TokenExpires)) {
+		log.Printf("Token is nil or expired. Fetching new token")
+		err := lc.fetchToken()
+		if err != nil {
+			return err
+		}
 	}
 
-	return err
+	// fetch patient id
+	if lc.PatientId == nil {
+		log.Printf("Patient id is nil. Fetching new patient id")
+		err := lc.FetchPatientId()
+		if err != nil {
+			return err
+		}
+	}
+
+	graph, err := llum.FetchData(*lc.PatientId, *lc.Token)
+	if err != nil {
+		return err
+	}
+
+	// trying to send to medsenger
+	log.Printf("Got graph with %d items", len(graph.Mesurements))
+	for _, item := range graph.Mesurements {
+		if lc.LastSyncDate == nil || item.FactoryTimestamp.Time.After(*lc.LastSyncDate) {
+			log.Printf("Sending item %s", item.ValueAsString())
+			_, err := mc.AddRecord(lc.ContractId, "glukose", item.ValueAsString(), item.FactoryTimestamp.Time, nil)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// update last sync date
+	lastSyncDate := getLatestTimestamp(graph.Mesurements)
+	if lastSyncDate != nil {
+		lc.LastSyncDate = lastSyncDate
+		return lc.Save()
+	}
+
+	return nil
 }

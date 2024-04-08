@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Timestamp is like time.Time, but knows how to unmarshal from JSON Unix timestamp 
+// Timestamp is like time.Time, but knows how to unmarshal from JSON Unix timestamp
 // numbers and marshal back into the same JSON representation.
 type Timestamp struct {
 	time.Time

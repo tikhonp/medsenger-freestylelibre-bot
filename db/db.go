@@ -25,11 +25,15 @@ const schema = `
         token VARCHAR(500),
         last_sync_date TIMESTAMP,
         token_expires TIMESTAMP,
-        patient_id VARCHAR(254) 
+        patient_id VARCHAR(254), 
+        contract_id INTEGER NOT NULL
     )
 `
 
 // db is a global database.
+//
+// Yes, im dumb and i use global varibles for db.
+// It's my second project in go, i think you can forgive me.
 var db *sqlx.DB
 
 func dataSourceName(cfg *config.Database) string {
