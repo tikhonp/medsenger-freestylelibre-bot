@@ -6,6 +6,7 @@ sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.22.2.linux-amd64.ta
 sudo curl -L -o /usr/local/bin/pkl https://github.com/apple/pkl/releases/download/0.25.2/pkl-linux-amd64
 sudo chmod +x /usr/local/bin/pkl
 pkl --version
+go get github.com/apple/pkl-go
 
 ./build.sh
 

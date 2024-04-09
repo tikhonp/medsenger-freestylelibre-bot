@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 
+	libre "github.com/TikhonP/medsenger-freestylelibre-bot"
 	"github.com/TikhonP/medsenger-freestylelibre-bot/config"
 	"github.com/TikhonP/medsenger-freestylelibre-bot/db"
-    libre "github.com/TikhonP/medsenger-freestylelibre-bot"
 )
 
 func main() {
@@ -14,5 +14,5 @@ func main() {
 		panic(err)
 	}
 	db.Connect(cfg.Db)
-    libre.Serve(cfg.Server)
+	libre.Serve(cfg.Server)
 }
