@@ -11,6 +11,9 @@ type Config struct {
 	Server *Server `pkl:"server"`
 
 	Db *Database `pkl:"db"`
+
+	// The duration of the sleep between the requests to the LibreView API.
+	FetchSleepDuration *pkl.Duration `pkl:"fetchSleepDuration"`
 }
 
 // LoadFromPath loads the pkl module at the given path and evaluates it into a Config

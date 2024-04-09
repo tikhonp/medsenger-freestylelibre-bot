@@ -1,6 +1,6 @@
 module github.com/TikhonP/medsenger-freestylelibre-bot
 
-go 1.22.1
+go 1.22.2
 
 require (
 	github.com/TikhonP/maigo v0.2.0

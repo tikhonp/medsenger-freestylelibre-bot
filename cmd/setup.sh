@@ -1,6 +1,6 @@
 # install go
-curl -OL https://go.dev/dl/go1.22.1.linux-amd64.tar.gz
-sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.22.1.linux-amd64.tar.gz
+curl -OL https://go.dev/dl/go1.22.2.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.22.2.linux-amd64.tar.gz
 
 # Install pkl
 sudo curl -L -o /usr/local/bin/pkl https://github.com/apple/pkl/releases/download/0.25.2/pkl-linux-amd64

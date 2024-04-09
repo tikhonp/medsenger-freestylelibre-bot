@@ -10,8 +10,6 @@ import (
 	"github.com/TikhonP/medsenger-freestylelibre-bot/db"
 )
 
-const sleepDuration time.Duration = 30 * time.Minute
-
 func task(mc *maigo.Client) error {
 	lcs, err := db.GetActiveLibreClientToFetch()
 	if err != nil {
@@ -34,6 +32,7 @@ func main() {
 	db.Connect(cfg.Db)
 	client := maigo.Init(cfg.Server.MedsengerAgentKey)
 
+	sleepDuration := cfg.FetchSleepDuration.GoDuration()
 	for {
 		err := task(client)
 		if err != nil {
