@@ -32,11 +32,11 @@ func NewLibreClient(email string, password string, contractId int) (*LibreClient
 	if err != nil {
 		return nil, err
 	}
-	if contract.LibreClient != nil {
-		libreClient, err := GetLibreClientById(*contract.LibreClient)
+	if contract.LibreClientId != nil {
+		libreClient, err := contract.LibreClient()
 		if err != nil {
 			if errors.Is(err, ErrLibreClientNotFound) {
-				contract.LibreClient = nil
+				contract.LibreClientId = nil
 			} else {
 				return nil, err
 			}
@@ -54,7 +54,7 @@ func NewLibreClient(email string, password string, contractId int) (*LibreClient
 	if err != nil {
 		return nil, err
 	}
-	contract.LibreClient = &lc.Id
+	contract.LibreClientId = &lc.Id
 	err = contract.Save()
 	return &lc, err
 }

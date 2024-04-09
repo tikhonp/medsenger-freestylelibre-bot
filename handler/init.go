@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/TikhonP/medsenger-freestylelibre-bot/db"
 	"github.com/TikhonP/maigo"
+	"github.com/TikhonP/medsenger-freestylelibre-bot/db"
 	"github.com/labstack/echo/v4"
 	"log"
 	"net/http"
@@ -49,6 +49,16 @@ func (h *InitHandler) Handle(c echo.Context) error {
 		contract.PatientName = &ci.PatientName
 		contract.PatientEmail = &ci.PatientEmail
 		if err := contract.Save(); err != nil {
+			log.Println(err)
+			return
+		}
+		_, err = h.MaigoClient.SendMessage(
+			m.ContractId,
+			"Подключен агент для интеграции глюкометров freestyle libre! Пожалуйста настройте аккаунт Libre Link Up.",
+			maigo.WithAction("Настроить", "/setup", maigo.Action),
+			maigo.OnlyPatient(),
+		)
+		if err != nil {
 			log.Println(err)
 			return
 		}

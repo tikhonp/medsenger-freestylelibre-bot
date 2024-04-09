@@ -10,7 +10,9 @@ import "context"
 import "io"
 import "bytes"
 
-func Settings(patientName string) templ.Component {
+import "github.com/TikhonP/medsenger-freestylelibre-bot/db"
+
+func Settings(patientName string, lc *db.LibreClient) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -29,20 +31,43 @@ func Settings(patientName string) templ.Component {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div><h1>Patient Name: ")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div><div class=\"relative bg-white px-6 pt-10 pb-8 shadow-xl ring-1 ring-gray-900/5 sm:mx-auto sm:max-w-lg sm:rounded-lg sm:px-10\"><div class=\"mx-auto max-w-md\"><div class=\"divide-y divide-gray-300/50\"><div class=\"pt-8 text-base font-semibold leading-7\"><p class=\"text-gray-900\">Имя пациента: ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(patientName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/settings.templ`, Line: 6, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/settings.templ`, Line: 12, Col: 87}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</h1><span>Add Libre Link up account</span><form method=\"POST\">email: <input type=\"text\" name=\"email\"> password: <input type=\"password\" name=\"password\"> <input type=\"submit\" name=\"Sumbit\"></form></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if lc != nil {
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"space-y-6 py-8 text-base leading-7 text-gray-600\"><p>Добавлен аккаунт ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var4 string
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(lc.Email)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/settings.templ`, Line: 16, Col: 73}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p></div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"space-y-6 py-8 text-base leading-7 text-gray-600\"><p>Создайте аккаунт сервиса Libre Link Up и введите логин и пароль ниже</p><form class=\"w-full max-w-sm\" method=\"POST\"><div class=\"md:flex md:items-center mb-6\"><div class=\"md:w-1/3\"><label class=\"block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4\" for=\"inline-full-name\">Логин</label></div><div class=\"md:w-2/3\"><input class=\"bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500\" id=\"inline-full-name\" type=\"text\" value=\"\" name=\"email\"></div></div><div class=\"md:flex md:items-center mb-6\"><div class=\"md:w-1/3\"><label class=\"block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4\" for=\"inline-password\">Пароль</label></div><div class=\"md:w-2/3\"><input class=\"bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500\" id=\"inline-password\" type=\"password\" placeholder=\"******************\" name=\"password\"></div></div><div class=\"md:flex md:items-center\"><div class=\"md:w-1/3\"></div><div class=\"md:w-2/3\"><button class=\"shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded\" type=\"submit\">Сохранить</button></div></div></form></div></div></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

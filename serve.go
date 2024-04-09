@@ -38,11 +38,6 @@ func Serve(cfg *config.Server) {
 		Output: app.Logger.Output(),
 	}))
 	app.Use(middleware.Recover())
-	//app.Use(middleware.BodyDump(func(context echo.Context, req []byte, res []byte) {
-	//	fmt.Println()
-	//	fmt.Println("Request:", string(req))
-	//	fmt.Println("Response:", string(res))
-	//}))
 	if !cfg.Debug {
 		app.Use(sentryecho.New(sentryecho.Options{}))
 	}
@@ -56,6 +51,9 @@ func Serve(cfg *config.Server) {
 
 	app.GET("/settings", handlers.settings.Get, util.ApiKeyGetParam(cfg))
 	app.POST("/settings", handlers.settings.Post, util.ApiKeyGetParam(cfg))
+
+	app.GET("/setup", handlers.settings.Get, util.ApiKeyGetParam(cfg))
+	app.POST("/setup", handlers.settings.Post, util.ApiKeyGetParam(cfg))
 
 	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	err := app.Start(addr)

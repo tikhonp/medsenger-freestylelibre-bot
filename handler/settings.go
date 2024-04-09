@@ -21,13 +21,14 @@ func (h *SettingsHandler) Get(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	var patientName = contract.PatientName
-	if patientName == nil {
-		var defaultStr = "Undefinded"
-		patientName = &defaultStr
-	}
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
-	return view.Settings(*patientName).Render(c.Request().Context(), c.Response().Writer)
+	var lc *db.LibreClient = nil
+	lc, _ = contract.LibreClient()
+	return util.TemplRender(c,
+		view.Settings(
+			util.Safe(contract.PatientName, ""),
+			lc,
+		),
+	)
 }
 
 type formData struct {
@@ -51,5 +52,5 @@ func (h *SettingsHandler) Post(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.NoContent(http.StatusOK)
+	return h.Get(c)
 }

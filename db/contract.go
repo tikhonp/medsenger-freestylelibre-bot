@@ -10,13 +10,13 @@ import (
 // Contract represents Medsenger contract.
 // Create on agent /init and persist during agent lifecycle.
 type Contract struct {
-	Id           int     `db:"id"`
-	IsActive     bool    `db:"is_active"`
-	AgentToken   *string `db:"agent_token"`
-	PatientName  *string `db:"patient_name"`
-	PatientEmail *string `db:"patient_email"`
-	Locale       *string `db:"locale"`
-	LibreClient  *int    `db:"libre_client"`
+	Id            int     `db:"id"`
+	IsActive      bool    `db:"is_active"`
+	AgentToken    *string `db:"agent_token"`
+	PatientName   *string `db:"patient_name"`
+	PatientEmail  *string `db:"patient_email"`
+	Locale        *string `db:"locale"`
+	LibreClientId *int    `db:"libre_client"`
 }
 
 // Save on Contract saves structure to database.
@@ -26,8 +26,15 @@ func (c *Contract) Save() error {
 		VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id)
 		DO UPDATE SET is_active = EXCLUDED.is_active, agent_token = EXCLUDED.agent_token, patient_name = EXCLUDED.patient_name, patient_email = EXCLUDED.patient_email, locale = EXCLUDED.locale, libre_client = EXCLUDED.libre_client
 	`
-	_, err := db.Exec(query, c.Id, c.IsActive, c.AgentToken, c.PatientName, c.PatientEmail, c.Locale, c.LibreClient)
+	_, err := db.Exec(query, c.Id, c.IsActive, c.AgentToken, c.PatientName, c.PatientEmail, c.Locale, c.LibreClientId)
 	return err
+}
+
+func (c *Contract) LibreClient() (*LibreClient, error) {
+	if c.LibreClientId == nil {
+		return nil, ErrLibreClientNotFound
+	}
+	return GetLibreClientById(*c.LibreClientId)
 }
 
 // GetActiveContractIds returns all active contracts ids.
