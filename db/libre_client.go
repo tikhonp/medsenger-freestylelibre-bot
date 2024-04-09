@@ -158,15 +158,19 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 		return err
 	}
 
-	// trying to send to medsenger
 	log.Printf("Got graph with %d items", len(graph.Mesurements))
+
+	var records []maigo.Record
 	for _, item := range graph.Mesurements {
 		if lc.LastSyncDate == nil || item.FactoryTimestamp.Time.After(*lc.LastSyncDate) {
-			log.Printf("Sending item %s", item.ValueAsString())
-			_, err := mc.AddRecord(lc.ContractId, "glukose", item.ValueAsString(), item.FactoryTimestamp.Time, nil)
-			if err != nil {
-				return err
-			}
+			records = append(records, maigo.NewRecord("glukose", item.ValueAsString(), item.FactoryTimestamp.Time))
+		}
+	}
+	if len(records) > 0 {
+		log.Printf("Sending %d records to medsenger", len(records))
+		_, err = mc.AddRecords(lc.ContractId, records)
+		if err != nil {
+			return err
 		}
 	}
 
