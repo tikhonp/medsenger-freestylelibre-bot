@@ -8,6 +8,7 @@ import (
 	"github.com/TikhonP/maigo"
 	"github.com/TikhonP/medsenger-freestylelibre-bot/config"
 	"github.com/TikhonP/medsenger-freestylelibre-bot/db"
+	"github.com/TikhonP/medsenger-freestylelibre-bot/util"
 	"github.com/getsentry/sentry-go"
 )
 
@@ -25,23 +26,13 @@ func task(mc *maigo.Client) error {
 	return nil
 }
 
-func sentryInit(dsn string) {
-	if err := sentry.Init(sentry.ClientOptions{
-		Dsn:              dsn,
-		TracesSampleRate: 1.0,
-		Debug:            false,
-	}); err != nil {
-		log.Printf("Sentry initialization failed: %v", err)
-	}
-}
-
 func main() {
 	cfg, err := config.LoadFromPath(context.Background(), "pkl/local/config.pkl")
 	if err != nil {
 		panic(err)
 	}
 	if !cfg.Server.Debug {
-		sentryInit(cfg.SentryDSN)
+		util.SentryInit(cfg.SentryDSN)
 	}
 	db.Connect(cfg.Db)
 	client := maigo.Init(cfg.Server.MedsengerAgentKey)
