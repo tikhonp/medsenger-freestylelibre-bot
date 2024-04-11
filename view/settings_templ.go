@@ -25,7 +25,7 @@ func settingsLayout() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"relative flex min-h-screen justify-center overflow-hidden bg-gray-50\"><div class=\"mx-auto max-w-md\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"relative flex min-h-screen justify-center overflow-hidden bg-gray-50 mx-auto px-5\"><div class=\"mx-auto max-w-md\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
