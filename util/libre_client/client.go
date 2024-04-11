@@ -31,7 +31,7 @@ func setDefaultHeaders(r *http.Request) {
 	r.Header.Set("version", "4.7")
 }
 
-func (lm *LibreLinkUpManager) makeRequest(method, path string, body io.Reader, token *string) (*http.Response, error) {
+func (lm LibreLinkUpManager) makeRequest(method, path string, body io.Reader, token *string) (*http.Response, error) {
 	url := host + path
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
@@ -81,7 +81,7 @@ func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 	return &responseData.Data, nil
 }
 
-func (lm *LibreLinkUpManager) Login(email, password string) (*User, error) {
+func (lm LibreLinkUpManager) Login(email, password string) (*User, error) {
 	type request struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -98,7 +98,7 @@ func (lm *LibreLinkUpManager) Login(email, password string) (*User, error) {
 	return decodeResponse[User](resp)
 }
 
-func (lm *LibreLinkUpManager) FetchConnections(token string) ([]LibreConnection, error) {
+func (lm LibreLinkUpManager) FetchConnections(token string) ([]LibreConnection, error) {
 	resp, err := lm.makeRequest(http.MethodGet, "/llu/connections", nil, &token)
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (lm *LibreLinkUpManager) FetchConnections(token string) ([]LibreConnection,
 	return *data, nil
 }
 
-func (lm *LibreLinkUpManager) FetchData(patientId uuid.UUID, token string) (*GraphData, error) {
+func (lm LibreLinkUpManager) FetchData(patientId uuid.UUID, token string) (*GraphData, error) {
 	url := fmt.Sprintf("/llu/connections/%s/graph", patientId.String())
 	resp, err := lm.makeRequest(http.MethodGet, url, nil, &token)
 	if err != nil {

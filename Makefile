@@ -1,5 +1,5 @@
 templ_serve:
-	@templ generate -watch -proxy=http://localhost:8080
+	@templ generate -watch -proxy=http://localhost:9990
 
 templ:
 	@templ generate

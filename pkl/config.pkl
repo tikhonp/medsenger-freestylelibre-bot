@@ -32,3 +32,6 @@ db: Database
 
 /// The duration of the sleep between the requests to the LibreView API.
 fetchSleepDuration: Duration
+
+/// Sentry configutation URL
+sentryDSN: String

@@ -9,10 +9,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type SettingsHandler struct {
-}
+type SettingsHandler struct{}
 
-func (h *SettingsHandler) Get(c echo.Context) error {
+func (h SettingsHandler) renderPage(c echo.Context, showAddAccount bool) error {
 	contractId := util.QueryParamInt(c, "contract_id")
 	if contractId == nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "contract_id is required")
@@ -23,34 +22,32 @@ func (h *SettingsHandler) Get(c echo.Context) error {
 	}
 	var lc *db.LibreClient = nil
 	lc, _ = contract.LibreClient()
-	return util.TemplRender(c,
-		view.Settings(
-			util.Safe(contract.PatientName, ""),
-			lc,
-		),
+	return util.TemplRender(
+		c,
+        view.Settings(util.Safe(contract.PatientName, ""), lc, showAddAccount),
 	)
 }
 
-type formData struct {
-	Email    string `form:"email" validate:"required"`
-	Password string `form:"password" validate:"required"`
+func (h SettingsHandler) Get(c echo.Context) error {
+    return h.renderPage(c, true)
 }
 
-func (h *SettingsHandler) Post(c echo.Context) error {
-	contractId := util.QueryParamInt(c, "contract_id")
-	if contractId == nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "contract_id is required")
-	}
-	var userCredentials formData
-	if err := c.Bind(&userCredentials); err != nil {
+type userCredentials struct {
+	Email      string `form:"email" validate:"required"`
+	Password   string `form:"password" validate:"required"`
+	ContractId int    `form:"contract_id" validate:"required"`
+}
+
+func (h SettingsHandler) Post(c echo.Context) error {
+	var uc userCredentials
+	if err := c.Bind(&uc); err != nil {
 		return err
 	}
-	if err := c.Validate(userCredentials); err != nil {
+	if err := c.Validate(uc); err != nil {
 		return err
 	}
-	_, err := db.NewLibreClient(userCredentials.Email, userCredentials.Password, *contractId)
-	if err != nil {
+	if _, err := db.NewLibreClient(uc.Email, uc.Password, uc.ContractId); err != nil {
 		return err
 	}
-	return h.Get(c)
+    return h.renderPage(c, false)
 }

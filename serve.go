@@ -13,16 +13,16 @@ import (
 )
 
 type handlers struct {
-	root     *handler.RootHandler
-	init     *handler.InitHandler
-	status   *handler.StatusHandler
-	remove   *handler.RemoveHandler
-	settings *handler.SettingsHandler
+	root     handler.RootHandler
+	init     handler.InitHandler
+	status   handler.StatusHandler
+	remove   handler.RemoveHandler
+	settings handler.SettingsHandler
 }
 
 func createHandlers(maigoClient *maigo.Client) *handlers {
 	return &handlers{
-		init: &handler.InitHandler{MaigoClient: maigoClient},
+		init: handler.InitHandler{MaigoClient: maigoClient},
 	}
 }
 
@@ -39,7 +39,7 @@ func Serve(cfg *config.Server) {
 	}))
 	app.Use(middleware.Recover())
 	if !cfg.Debug {
-		app.Use(sentryecho.New(sentryecho.Options{}))
+		app.Use(sentryecho.New(sentryecho.Options{Repanic: true}))
 	}
 	app.Validator = util.NewDefaultValidator()
 
@@ -55,9 +55,8 @@ func Serve(cfg *config.Server) {
 	app.GET("/setup", handlers.settings.Get, util.ApiKeyGetParam(cfg))
 	app.POST("/setup", handlers.settings.Post, util.ApiKeyGetParam(cfg))
 
+	app.GET("/test_sentry", func(c echo.Context) error { panic("bla") })
+
 	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
-	err := app.Start(addr)
-	if err != nil {
-		panic(err)
-	}
+	app.Logger.Fatal(app.Start(addr))
 }

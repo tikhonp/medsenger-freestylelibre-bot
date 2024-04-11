@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/TikhonP/medsenger-freestylelibre-bot/db"
 	"github.com/labstack/echo/v4"
-	"net/http"
 )
 
 type statusResponseModel struct {
@@ -14,7 +15,7 @@ type statusResponseModel struct {
 
 type StatusHandler struct{}
 
-func (h *StatusHandler) Handle(c echo.Context) error {
+func (h StatusHandler) Handle(c echo.Context) error {
 	trackedContracts, err := db.GetActiveContractIds()
 	if err != nil {
 		return err

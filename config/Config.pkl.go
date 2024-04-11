@@ -14,6 +14,9 @@ type Config struct {
 
 	// The duration of the sleep between the requests to the LibreView API.
 	FetchSleepDuration *pkl.Duration `pkl:"fetchSleepDuration"`
+
+	// Sentry configutation URL
+	SentryDSN string `pkl:"sentryDSN"`
 }
 
 // LoadFromPath loads the pkl module at the given path and evaluates it into a Config
