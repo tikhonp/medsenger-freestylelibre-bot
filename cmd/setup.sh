@@ -8,7 +8,7 @@ sudo chmod +x /usr/local/bin/pkl
 pkl --version
 go get github.com/apple/pkl-go
 
-./build.sh
+./update.sh
 
 sudo cp freestylelibre_medsenger_bot.conf /etc/supervisor/conf.d/
 sudo cp freestylelibre_nginx.conf /etc/nginx/sites-enabled/
