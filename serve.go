@@ -57,6 +57,8 @@ func Serve(cfg *config.Server) {
 	app.GET("/setup", handlers.settings.Get, util.ApiKeyGetParam(cfg))
 	app.POST("/setup", handlers.settings.Post, util.ApiKeyGetParam(cfg))
 
+	app.GET("/crash", func(c echo.Context) error { panic("crash") })
+
 	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	app.Logger.Fatal(app.Start(addr))
 }
