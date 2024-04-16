@@ -2,6 +2,7 @@ package freestylelibre
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/TikhonP/maigo"
 	"github.com/TikhonP/medsenger-freestylelibre-bot/config"
@@ -40,6 +41,7 @@ func Serve(cfg *config.Server) {
 	app.Use(middleware.Recover())
 	if !cfg.Debug {
 		app.Use(sentryecho.New(sentryecho.Options{Repanic: true}))
+		log.Printf("Sentry initialized")
 	}
 	app.Validator = util.NewDefaultValidator()
 
