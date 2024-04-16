@@ -2,7 +2,6 @@ package freestylelibre
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/TikhonP/maigo"
 	"github.com/TikhonP/medsenger-freestylelibre-bot/config"
