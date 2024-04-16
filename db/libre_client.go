@@ -48,7 +48,7 @@ func NewLibreClient(email string, password string, contractId int) (*LibreClient
 			return libreClient, err
 		}
 	}
-	query := `INSERT INTO libre_clients (email, password, contract_id) VALUES ($1, $2, $3) RETURNING *`
+	const query = `INSERT INTO libre_clients (email, password, contract_id) VALUES ($1, $2, $3) RETURNING *`
 	var lc LibreClient
 	err = db.Get(&lc, query, email, password, contractId)
 	if err != nil {
@@ -64,7 +64,7 @@ func (lc *LibreClient) Contract() (*Contract, error) {
 }
 
 func (lc *LibreClient) Save() error {
-	query := `
+	const query = `
 		INSERT INTO libre_clients (id, email, password, token, token_expires, last_sync_date, patient_id, contract_id)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id)
 		DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, token = EXCLUDED.token, token_expires = EXCLUDED.token_expires, last_sync_date = EXCLUDED.last_sync_date, patient_id = EXCLUDED.patient_id, contract_id = EXCLUDED.contract_id
@@ -83,7 +83,7 @@ func GetLibreClientById(id int) (*LibreClient, error) {
 }
 
 func GetActiveLibreClientToFetch() ([]LibreClient, error) {
-	query := `
+	const query = `
         SELECT lc.* 
         FROM contracts c
         JOIN libre_clients lc ON lc.id = c.libre_client

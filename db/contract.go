@@ -21,7 +21,7 @@ type Contract struct {
 
 // Save on Contract saves structure to database.
 func (c *Contract) Save() error {
-	query := `
+	const query = `
 		INSERT INTO contracts (id, is_active, agent_token, patient_name, patient_email, locale, libre_client)
 		VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id)
 		DO UPDATE SET is_active = EXCLUDED.is_active, agent_token = EXCLUDED.agent_token, patient_name = EXCLUDED.patient_name, patient_email = EXCLUDED.patient_email, locale = EXCLUDED.locale, libre_client = EXCLUDED.libre_client
