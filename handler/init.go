@@ -49,6 +49,7 @@ func (h InitHandler) fetchContractDataOnInit(c db.Contract, ctx echo.Context) {
 		ctx.Logger().Error(err)
 		return
 	}
+	ctx.Logger().Info("Successfully fetched contract data")
 }
 
 func (h InitHandler) Handle(c echo.Context) error {
