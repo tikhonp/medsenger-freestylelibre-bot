@@ -3,11 +3,13 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/TikhonP/maigo"
 	util "github.com/TikhonP/medsenger-freestylelibre-bot/util/libre_client"
+	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
 )
 
@@ -94,9 +96,17 @@ func GetActiveLibreClientToFetch() ([]LibreClient, error) {
 	return clients, err
 }
 
-func (lc *LibreClient) fetchToken() error {
+func (lc *LibreClient) sendMessageToDoctor(mc *maigo.Client, text string) {
+	_, err := mc.SendMessage(lc.ContractId, text, maigo.OnlyDoctor())
+	if err != nil {
+		sentry.CaptureException(err)
+	}
+}
+
+func (lc *LibreClient) fetchToken(mc *maigo.Client) error {
 	user, err := llum.Login(lc.Email, lc.Password)
 	if err != nil {
+		lc.sendMessageToDoctor(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Не удалось войти в систему, проверьте логин и пароль. Ошибка: %s", err.Error()))
 		return err
 	}
 	lc.Token = &user.AuthTicket.Token
@@ -104,12 +114,14 @@ func (lc *LibreClient) fetchToken() error {
 	return lc.Save()
 }
 
-func (lc *LibreClient) FetchPatientId() error {
+func (lc *LibreClient) fetchPatientId(mc *maigo.Client) error {
 	connections, err := llum.FetchConnections(*lc.Token)
 	if err != nil {
+		lc.sendMessageToDoctor(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Ошибка: %s", err.Error()))
 		return err
 	}
 	if len(connections) == 0 {
+		lc.sendMessageToDoctor(mc, "Ошибка синхронизации с сервисом Libre Link Up. Не найдено подключенных пациентов для отслеживания.")
 		return errors.New("Account connections is empty")
 	}
 	lc.PatientId = &connections[0].PatientId
@@ -138,7 +150,7 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 	// fetch token
 	if !(lc.Token != nil && now.Before(*lc.TokenExpires)) {
 		log.Printf("Token is nil or expired. Fetching new token")
-		err := lc.fetchToken()
+		err := lc.fetchToken(mc)
 		if err != nil {
 			return err
 		}
@@ -147,7 +159,7 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 	// fetch patient id
 	if lc.PatientId == nil {
 		log.Printf("Patient id is nil. Fetching new patient id")
-		err := lc.FetchPatientId()
+		err := lc.fetchPatientId(mc)
 		if err != nil {
 			return err
 		}
