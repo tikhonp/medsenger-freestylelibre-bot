@@ -9,7 +9,7 @@ import (
 func SentryInit(dsn string) {
 	if err := sentry.Init(sentry.ClientOptions{
 		Dsn:              dsn,
-		Debug:            true,
+		Debug:            false,
 		AttachStacktrace: true,
 		SampleRate:       1.0,
 		EnableTracing:    true,
