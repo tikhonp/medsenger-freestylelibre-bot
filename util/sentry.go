@@ -6,7 +6,7 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
-func SentryInit(dsn string) {
+func StartSentry(dsn string) {
 	if err := sentry.Init(sentry.ClientOptions{
 		Dsn:              dsn,
 		Debug:            false,

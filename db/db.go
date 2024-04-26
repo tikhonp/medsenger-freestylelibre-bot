@@ -40,8 +40,8 @@ func dataSourceName(cfg *config.Database) string {
 	return fmt.Sprintf("user=%s dbname=%s sslmode=disable password=%s host=%s", cfg.User, cfg.Dbname, cfg.Password, cfg.Host)
 }
 
-// Connect creates a new in-memory SQLite database and initializes it with the schema.
-func Connect(cfg *config.Database) {
+// MustConnect creates a new in-memory SQLite database and initializes it with the schema.
+func MustConnect(cfg *config.Database) {
 	db = sqlx.MustConnect("postgres", dataSourceName(cfg))
 	db.MustExec(schema)
 }

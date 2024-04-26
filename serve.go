@@ -12,7 +12,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-type handlers struct {
+type Server struct {
+	cfg      *config.Server
 	root     handler.RootHandler
 	init     handler.InitHandler
 	status   handler.StatusHandler
@@ -20,42 +21,41 @@ type handlers struct {
 	settings handler.SettingsHandler
 }
 
-func createHandlers(maigoClient *maigo.Client) *handlers {
-	return &handlers{
+func NewServer(cfg *config.Server) *Server {
+	maigoClient := maigo.Init(cfg.MedsengerAgentKey)
+	return &Server{
+		cfg:  cfg,
 		init: handler.InitHandler{MaigoClient: maigoClient},
 	}
 }
 
-func Serve(cfg *config.Server) {
-	maigoClient := maigo.Init(cfg.MedsengerAgentKey)
-	handlers := createHandlers(maigoClient)
-
+func (s *Server) Listen() {
 	app := echo.New()
-	app.Debug = cfg.Debug
+	app.Debug = s.cfg.Debug
 	app.HideBanner = true
 	app.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "[${time_rfc3339}] ${status} ${method} ${path} (${remote_ip}) ${latency_human}\n",
 		Output: app.Logger.Output(),
 	}))
 	app.Use(middleware.Recover())
-	if !cfg.Debug {
+	if !s.cfg.Debug {
 		app.Use(sentryecho.New(sentryecho.Options{Repanic: true}))
 		app.Logger.Printf("Sentry initialized")
 	}
 	app.Validator = util.NewDefaultValidator()
 
 	app.File("/styles.css", "public/styles.css")
-	app.GET("/", handlers.root.Handle)
-	app.POST("/init", handlers.init.Handle, util.ApiKeyJSON(cfg))
-	app.POST("/status", handlers.status.Handle, util.ApiKeyJSON(cfg))
-	app.POST("/remove", handlers.remove.Handle, util.ApiKeyJSON(cfg))
+	app.GET("/", s.root.Handle)
+	app.POST("/init", s.init.Handle, util.ApiKeyJSON(s.cfg))
+	app.POST("/status", s.status.Handle, util.ApiKeyJSON(s.cfg))
+	app.POST("/remove", s.remove.Handle, util.ApiKeyJSON(s.cfg))
 
-	app.GET("/settings", handlers.settings.Get, util.ApiKeyGetParam(cfg))
-	app.POST("/settings", handlers.settings.Post, util.ApiKeyGetParam(cfg))
+	app.GET("/settings", s.settings.Get, util.ApiKeyGetParam(s.cfg))
+	app.POST("/settings", s.settings.Post, util.ApiKeyGetParam(s.cfg))
 
-	app.GET("/setup", handlers.settings.Get, util.ApiKeyGetParam(cfg))
-	app.POST("/setup", handlers.settings.Post, util.ApiKeyGetParam(cfg))
+	app.GET("/setup", s.settings.Get, util.ApiKeyGetParam(s.cfg))
+	app.POST("/setup", s.settings.Post, util.ApiKeyGetParam(s.cfg))
 
-	addr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	addr := fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port)
 	app.Logger.Fatal(app.Start(addr))
 }

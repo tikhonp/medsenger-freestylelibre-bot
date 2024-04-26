@@ -32,12 +32,13 @@ func main() {
 		panic(err)
 	}
 	if !cfg.Server.Debug {
-		util.SentryInit(cfg.SentryDSN)
+		util.StartSentry(cfg.SentryDSN)
 	}
-	db.Connect(cfg.Db)
+	db.MustConnect(cfg.Db)
 	client := maigo.Init(cfg.Server.MedsengerAgentKey)
 
 	sleepDuration := cfg.FetchSleepDuration.GoDuration()
+	ticker := time.NewTicker(sleepDuration)
 	for {
 		err := task(client)
 		if err != nil {
@@ -45,6 +46,6 @@ func main() {
 			log.Println("Error:", err)
 		}
 		log.Println("Task completed. Sleeping for", sleepDuration)
-		time.Sleep(sleepDuration)
+		<-ticker.C
 	}
 }

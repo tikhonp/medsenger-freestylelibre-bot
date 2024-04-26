@@ -15,8 +15,8 @@ func main() {
 		panic(err)
 	}
 	if !cfg.Server.Debug {
-		util.SentryInit(cfg.SentryDSN)
+		util.StartSentry(cfg.SentryDSN)
 	}
-	db.Connect(cfg.Db)
-	libre.Serve(cfg.Server)
+	db.MustConnect(cfg.Db)
+    libre.NewServer(cfg.Server).Listen()
 }
