@@ -18,5 +18,5 @@ func main() {
 		util.StartSentry(cfg.SentryDSN)
 	}
 	db.MustConnect(cfg.Db)
-    libre.NewServer(cfg.Server).Listen()
+	libre.NewServer(cfg.Server).Listen()
 }
