@@ -1,6 +1,6 @@
 services:
   server:
-    container_name: libre-bot-server
+    container_name: agents-freestylelibre
     image: libre-bot
     build:
       context: .
@@ -15,7 +15,7 @@ services:
         max-size: "10m"
         max-file: "3"
   worker:
-    container_name: libre-bot-worker
+    container_name: agents-freestylelibre-worker
     image: libre-bot
     build:
       context: .
