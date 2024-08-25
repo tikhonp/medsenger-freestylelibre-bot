@@ -4,10 +4,10 @@ go 1.22.2
 
 require (
 	github.com/TikhonP/maigo v0.3.0
-	github.com/a-h/templ v0.2.663
+	github.com/a-h/templ v0.2.771
 	github.com/apple/pkl-go v0.8.0
-	github.com/getsentry/sentry-go v0.27.0
-	github.com/go-playground/validator/v10 v10.19.0
+	github.com/getsentry/sentry-go v0.28.1
+	github.com/go-playground/validator/v10 v10.22.0
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo/v4 v4.12.0
@@ -27,9 +27,9 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
-	golang.org/x/net v0.24.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/crypto v0.26.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
+	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 )

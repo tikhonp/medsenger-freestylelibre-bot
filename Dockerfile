@@ -18,6 +18,10 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
     CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/server ./cmd/server
 
+RUN --mount=type=cache,target=/go/pkg/mod/ \
+    --mount=type=bind,target=. \
+    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/fetch_task ./cmd/fetch_task
+
 
 FROM alpine:${ALPINE_VERSION} AS final
 
@@ -28,8 +32,7 @@ RUN --mount=type=cache,target=/var/cache/apk \
         && \
         update-ca-certificates
 
-ADD 'https://github.com/apple/pkl/releases/download/0.26.3/pkl-alpine-linux-amd64' /bin/pkl
-RUN chmod +x /bin/pkl
+ADD --chmod=111 'https://github.com/apple/pkl/releases/download/0.26.3/pkl-alpine-linux-amd64' /bin/pkl
 
 ARG UID=10001
 RUN adduser \
@@ -40,11 +43,13 @@ RUN adduser \
     --no-create-home \
     --uid "${UID}" \
     tikhon
+
+RUN mkdir pkl_cache && chown -R tikhon:tikhon /pkl_cache && chmod 755 /pkl_cache
+
 USER tikhon
 
 COPY --from=build /bin/server /bin/
+COPY --from=build /bin/fetch_task /bin/
 COPY pkl pkl
 
 EXPOSE 9990
-
-ENTRYPOINT [ "/bin/server" ]

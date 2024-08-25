@@ -1,0 +1,31 @@
+services:
+  server:
+    container_name: libre-bot-server
+    image: libre-bot
+    build:
+      context: .
+      target: final
+      network: "host"
+    command: server
+    restart: unless-stopped
+    network_mode: "host"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+  worker:
+    container_name: libre-bot-worker
+    image: libre-bot
+    build:
+      context: .
+      target: final
+      network: "host"
+    command: fetch_task
+    restart: unless-stopped
+    network_mode: "host"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
