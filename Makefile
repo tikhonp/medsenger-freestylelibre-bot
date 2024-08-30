@@ -15,7 +15,7 @@ tailwind:
 
 deploy: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
 deploy:
-	docker compose -f compose.prod.yaml up --build
+	docker compose -f compose.prod.yaml up --build -d
 
 docker_dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
 docker_dev:
