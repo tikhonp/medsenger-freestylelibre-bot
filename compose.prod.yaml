@@ -6,6 +6,8 @@ services:
       context: .
       target: final
       network: "host"
+      args:
+        SOURCE_COMMIT: $SOURCE_COMMIT
     command: server
     restart: unless-stopped
     network_mode: "host"
@@ -21,6 +23,8 @@ services:
       context: .
       target: final
       network: "host"
+      args:
+        SOURCE_COMMIT: $SOURCE_COMMIT
     command: fetch_task
     restart: unless-stopped
     network_mode: "host"

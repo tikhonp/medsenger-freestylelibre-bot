@@ -33,5 +33,8 @@ db: Database
 /// The duration of the sleep between the requests to the LibreView API.
 fetchSleepDuration: Duration
 
-/// Sentry configutation URL
+/// Sentry configutation URL.
 sentryDSN: String
+
+/// Text file must contain release version or commit hash.
+releaseFilePath: String

@@ -13,3 +13,10 @@ tailwind_serve:
 tailwind:
 	@tailwindcss -i view/css/input.css -o public/styles.css --minify
 
+deploy: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
+deploy:
+	docker compose -f compose.prod.yaml up --build
+
+docker_dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
+docker_dev:
+	docker compose up --build

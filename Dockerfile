@@ -22,7 +22,6 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
     CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/fetch_task ./cmd/fetch_task
 
-
 FROM alpine:${ALPINE_VERSION} AS final
 
 RUN --mount=type=cache,target=/var/cache/apk \
@@ -46,10 +45,14 @@ RUN adduser \
 
 RUN mkdir pkl_cache && chown -R tikhon:tikhon /pkl_cache && chmod 755 /pkl_cache
 
+ARG SOURCE_COMMIT
+RUN echo $SOURCE_COMMIT > release.txt && chown tikhon release.txt && chmod 755 release.txt
+
 USER tikhon
 
 COPY --from=build /bin/server /bin/
 COPY --from=build /bin/fetch_task /bin/
-COPY pkl pkl
+COPY . .
+
 
 EXPOSE 9990

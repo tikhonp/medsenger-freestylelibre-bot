@@ -32,7 +32,8 @@ func main() {
 		panic(err)
 	}
 	if !cfg.Server.Debug {
-		util.StartSentry(cfg.SentryDSN)
+		util.StartSentry(cfg.SentryDSN, cfg.ReleaseFilePath)
+		defer sentry.Flush(2 * time.Second)
 	}
 	db.MustConnect(cfg.Db)
 	client := maigo.Init(cfg.Server.MedsengerAgentKey)

@@ -5,6 +5,8 @@ services:
     build:
       context: .
       target: final
+      args:
+        SOURCE_COMMIT: $SOURCE_COMMIT
     command: server
     ports:
       - 9999:9990
@@ -19,6 +21,8 @@ services:
     build:
       context: .
       target: final
+      args:
+        SOURCE_COMMIT: $SOURCE_COMMIT
     command: fetch_task
     depends_on:
       db:
