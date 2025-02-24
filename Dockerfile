@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG GO_VERSION=1.23.4
+ARG GO_VERSION=1.23.6
 ARG ALPINE_VERSION=3.21
 
 FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/var/cache/apk \
         && \
         update-ca-certificates
 
-ADD --chmod=111 'https://github.com/apple/pkl/releases/download/0.27.1/pkl-alpine-linux-amd64' /bin/pkl
+ADD --chmod=111 'https://github.com/apple/pkl/releases/download/0.27.2/pkl-alpine-linux-amd64' /bin/pkl
 
 ARG UID=10001
 RUN adduser \

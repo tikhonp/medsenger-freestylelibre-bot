@@ -15,15 +15,14 @@ func StartSentry(dsn string, releaseVersionFile string) {
 	}
 	log.Printf("Release version: %s", string(releaseVersion))
 	if err := sentry.Init(sentry.ClientOptions{
-		Dsn:                dsn,
-		Debug:              false,
-		AttachStacktrace:   true,
-		SampleRate:         1.0,
-		EnableTracing:      true,
-		TracesSampleRate:   1.0,
-		ProfilesSampleRate: 1.0,
-		SendDefaultPII:     true,
-		Release:            string(releaseVersion),
+		Dsn:              dsn,
+		Debug:            false,
+		AttachStacktrace: true,
+		SampleRate:       1.0,
+		EnableTracing:    true,
+		TracesSampleRate: 1.0,
+		SendDefaultPII:   true,
+		Release:          string(releaseVersion),
 	}); err != nil {
 		log.Printf("Sentry initialization failed: %v", err)
 	}

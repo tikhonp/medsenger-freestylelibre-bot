@@ -27,7 +27,7 @@ templ-serve:
 templ:
 	templ generate
 
-pkl:
+pkl-gen:
 	pkl-gen-go pkl/config.pkl --base-path github.com/TikhonP/medsenger-freestylelibre-bot
 
 tailwind-serve:

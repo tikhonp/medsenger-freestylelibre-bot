@@ -25,7 +25,7 @@ type LibreClient struct {
 	ContractId   int        `db:"contract_id"`
 }
 
-var ErrLibreClientNotFound = errors.New("Libre Client not flound")
+var ErrLibreClientNotFound = errors.New("libre client not found")
 
 var llum = util.NewLibreLinkUpManager()
 
@@ -122,7 +122,7 @@ func (lc *LibreClient) fetchPatientId(mc *maigo.Client) error {
 	}
 	if len(connections) == 0 {
 		lc.sendMessageToDoctor(mc, "Ошибка синхронизации с сервисом Libre Link Up. Не найдено подключенных пациентов для отслеживания.")
-		return errors.New("Account connections is empty")
+		return errors.New("account connections is empty")
 	}
 	lc.PatientId = &connections[0].PatientId
 	return lc.Save()
@@ -135,7 +135,7 @@ func getLatestTimestamp(data []util.GlucoseMeasurement) *time.Time {
 	}
 	timestamp := data[0].FactoryTimestamp.Time
 	for _, item := range data {
-		if item.FactoryTimestamp.Time.After(timestamp) {
+		if item.FactoryTimestamp.After(timestamp) {
 			timestamp = item.FactoryTimestamp.Time
 		}
 	}
@@ -148,7 +148,7 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 	now := time.Now().UTC()
 
 	// fetch token
-	if !(lc.Token != nil && now.Before(*lc.TokenExpires)) {
+	if lc.Token == nil || now.After(*lc.TokenExpires) {
 		log.Printf("Token is nil or expired. Fetching new token")
 		err := lc.fetchToken(mc)
 		if err != nil {
@@ -174,7 +174,7 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 
 	var records []maigo.Record
 	for _, item := range graph.Mesurements {
-		if lc.LastSyncDate == nil || item.FactoryTimestamp.Time.After(*lc.LastSyncDate) {
+		if lc.LastSyncDate == nil || item.FactoryTimestamp.After(*lc.LastSyncDate) {
 			records = append(records, maigo.NewRecord("glukose", item.ValueAsString(), item.FactoryTimestamp.Time))
 		}
 	}
