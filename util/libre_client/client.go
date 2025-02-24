@@ -77,8 +77,6 @@ func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 			return nil, err
 		}
 		return nil, fmt.Errorf("status is not 1: %s", errorData.Error.Message)
-	} else {
-		fmt.Printf("RESPONSE: %s\n", b.String())
 	}
 	return &responseData.Data, nil
 }
