@@ -1,22 +1,37 @@
-templ_serve:
-	@templ generate -watch -proxy=http://localhost:9990
+run: dev
 
-templ:
-	@templ generate
+dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
+dev:
+	docker compose -f compose.yaml up
 
-pkl_conf:
-	@pkl-gen-go pkl/config.pkl --base-path github.com/TikhonP/medsenger-freestylelibre-bot
+build-dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
+build-dev:
+	docker compose -f compose.yaml up --build
 
-tailwind_serve:
-	@tailwindcss -i view/css/input.css -o public/styles.css --watch
-
-tailwind:
-	@tailwindcss -i view/css/input.css -o public/styles.css --minify
-
-deploy: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
-deploy:
+prod: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
+prod:
 	docker compose -f compose.prod.yaml up --build -d
 
-docker_dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
-docker_dev:
-	docker compose up --build
+fprod:
+	docker compose -f compose.prod.yaml down
+
+logs-prod:
+	docker compose -f compose.prod.yaml logs -f -n 100
+
+go-to-server-container:
+	docker exec -it agents-freestylelibre /bin/bash
+
+templ-serve:
+	templ generate -watch -proxy=http://localhost:9990
+
+templ:
+	templ generate
+
+pkl:
+	pkl-gen-go pkl/config.pkl --base-path github.com/TikhonP/medsenger-freestylelibre-bot
+
+tailwind-serve:
+	tailwindcss -i view/css/input.css -o public/styles.css --watch
+
+tailwind:
+	tailwindcss -i view/css/input.css -o public/styles.css --minify

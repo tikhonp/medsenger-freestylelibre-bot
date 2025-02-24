@@ -22,12 +22,12 @@ const schema = `
         id SERIAL PRIMARY KEY NOT NULL,
         email VARCHAR(254) NOT NULL,
         password VARCHAR(254) NOT NULL,
-        token VARCHAR(500),
+        token VARCHAR(1000),
         last_sync_date TIMESTAMP,
         token_expires TIMESTAMP,
         patient_id VARCHAR(254), 
         contract_id INTEGER NOT NULL
-    )
+    );
 `
 
 // db is a global database.

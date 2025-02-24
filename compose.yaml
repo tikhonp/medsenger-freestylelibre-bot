@@ -1,26 +1,26 @@
 services:
   server:
-    container_name: libre-bot-server
+    container_name: agents-freestylelibre
     image: libre-bot
     build:
       context: .
-      target: final
+      target: dev
       args:
         SOURCE_COMMIT: $SOURCE_COMMIT
     command: server
     ports:
-      - 9999:9990
+      - 3036:3036
     depends_on:
       db:
         condition: service_healthy
     networks:
       - localnet
   worker:
-    container_name: libre-bot-worker
+    container_name: agents-freestylelibre-worker
     image: libre-bot
     build:
       context: .
-      target: final
+      target: dev
       args:
         SOURCE_COMMIT: $SOURCE_COMMIT
     command: fetch_task
@@ -39,9 +39,6 @@ services:
       - POSTGRES_USER=medsenger
       - POSTGRES_DB=freestylelibre-medsenger-bot
       - POSTGRES_PASSWORD=blablabla
-    ports:
-      - 5432:5432
-      - 9990:9990
     healthcheck:
       test: [ "CMD", "pg_isready", "-q", "-U", "medsenger", "-d", "freestylelibre-medsenger-bot" ]
       interval: 10s

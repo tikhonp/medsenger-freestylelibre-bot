@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
     CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/fetch_task ./cmd/fetch_task
 
-FROM alpine:${ALPINE_VERSION} AS final
+FROM alpine:${ALPINE_VERSION} AS prod
 
 RUN --mount=type=cache,target=/var/cache/apk \
     apk --update add \
@@ -49,10 +49,23 @@ ARG SOURCE_COMMIT
 RUN echo $SOURCE_COMMIT > release.txt && chown tikhon release.txt && chmod 755 release.txt
 
 USER tikhon
-
 COPY --from=build /bin/server /bin/
 COPY --from=build /bin/fetch_task /bin/
 COPY . .
+EXPOSE 3036
 
 
-EXPOSE 9990
+FROM debian:bookworm-slim AS dev
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    openjdk-17-jdk ant ca-certificates-java ca-certificates && \
+    apt-get clean && \
+    update-ca-certificates -f;
+ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64/"
+RUN export JAVA_HOME
+ADD --chmod=111 "https://repo1.maven.org/maven2/org/pkl-lang/pkl-cli-java/0.27.1/pkl-cli-java-0.27.1.jar" /bin/pkl
+ARG SOURCE_COMMIT
+RUN echo $SOURCE_COMMIT > release.txt 
+COPY --from=build /bin/server /bin/
+COPY --from=build /bin/fetch_task /bin/
+COPY . .
+EXPOSE 3036
