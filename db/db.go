@@ -2,9 +2,9 @@ package db
 
 import (
 	"fmt"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
 )
 
 const schema = `
@@ -28,6 +28,8 @@ const schema = `
         patient_id VARCHAR(254), 
         contract_id INTEGER NOT NULL
     );
+
+	ALTER TABLE public.libre_clients ADD COLUMN IF NOT EXISTS is_valid BOOLEAN NOT NULL DEFAULT TRUE;
 `
 
 // db is a global database.

@@ -12,18 +12,19 @@ import (
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 )
 
-func task(mc *maigo.Client) error {
+func task(mc *maigo.Client) {
 	lcs, err := db.GetActiveLibreClientToFetch()
 	if err != nil {
-		return err
+		sentry.CaptureException(err)
+		log.Println("Error:", err)
 	}
 	for _, lc := range lcs {
 		err := lc.FetchData(mc)
 		if err != nil {
-			return err
+			sentry.CaptureException(err)
+			log.Println("Error:", err)
 		}
 	}
-	return nil
 }
 
 func main() {
@@ -40,15 +41,10 @@ func main() {
 	}
 	db.MustConnect(cfg.Db)
 	client := maigo.Init(cfg.Server.MedsengerAgentKey)
-
 	sleepDuration := cfg.FetchSleepDuration.GoDuration()
 	ticker := time.NewTicker(sleepDuration)
 	for {
-		err := task(client)
-		if err != nil {
-			sentry.CaptureException(err)
-			log.Println("Error:", err)
-		}
+		task(client)
 		log.Println("Task completed. Sleeping for", sleepDuration)
 		<-ticker.C
 	}
