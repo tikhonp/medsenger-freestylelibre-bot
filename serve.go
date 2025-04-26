@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/TikhonP/maigo"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/config"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/handler"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/util"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/handler"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 	sentryecho "github.com/getsentry/sentry-go/echo"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

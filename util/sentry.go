@@ -7,14 +7,10 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
-func StartSentry(dsn string, releaseVersionFile string) {
-	releaseVersion, err := os.ReadFile(releaseVersionFile)
-	if err != nil {
-		log.Printf("Failed to read release version file: %v", err)
-		releaseVersion = []byte("unknown")
-	}
-	log.Printf("Release version: %s", string(releaseVersion))
-	if err := sentry.Init(sentry.ClientOptions{
+func StartSentry(dsn string) error {
+	releaseVersion := os.Getenv("SOURCE_COMMIT")
+	log.Printf("Release version: %s", releaseVersion)
+	return sentry.Init(sentry.ClientOptions{
 		Dsn:              dsn,
 		Debug:            false,
 		AttachStacktrace: true,
@@ -22,8 +18,6 @@ func StartSentry(dsn string, releaseVersionFile string) {
 		EnableTracing:    true,
 		TracesSampleRate: 1.0,
 		SendDefaultPII:   true,
-		Release:          string(releaseVersion),
-	}); err != nil {
-		log.Printf("Sentry initialization failed: %v", err)
-	}
+		Release:          releaseVersion,
+	})
 }

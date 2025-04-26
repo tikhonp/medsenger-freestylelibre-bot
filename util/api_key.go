@@ -3,7 +3,7 @@ package util
 import (
     "bytes"
     "encoding/json"
-    "github.com/TikhonP/medsenger-freestylelibre-bot/config"
+    "github.com/tikhonp/medsenger-freestylelibre-bot/config"
     "github.com/labstack/echo/v4"
     "io"
     "net/http"

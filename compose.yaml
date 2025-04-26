@@ -1,13 +1,9 @@
 services:
   server:
-    container_name: agents-freestylelibre
-    image: libre-bot
+    container_name: freestylelibre-server-agent
     build:
       context: .
       target: dev
-      args:
-        SOURCE_COMMIT: $SOURCE_COMMIT
-    command: server
     ports:
       - 3036:3036
     depends_on:
@@ -15,20 +11,11 @@ services:
         condition: service_healthy
     networks:
       - localnet
-  worker:
-    container_name: agents-freestylelibre-worker
-    image: libre-bot
-    build:
-      context: .
-      target: dev
-      args:
-        SOURCE_COMMIT: $SOURCE_COMMIT
-    command: fetch_task
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - localnet
+    environment:
+      - SOURCE_COMMIT=${SOURCE_COMMIT}
+    volumes:
+      - ./:/src
+
   db:
     container_name: libre-bot-dev-db
     image: postgres
@@ -50,6 +37,7 @@ services:
 
 volumes:
   db-data:
+    name: "freestylelibre-db-data"
 
 networks:
   localnet:

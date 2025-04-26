@@ -3,7 +3,7 @@ package util
 import (
 	"strconv"
 
-	"github.com/TikhonP/medsenger-freestylelibre-bot/util"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 	"github.com/google/uuid"
 )
 

@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/config"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )

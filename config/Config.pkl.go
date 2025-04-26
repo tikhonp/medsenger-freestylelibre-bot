@@ -17,16 +17,11 @@ type Config struct {
 
 	// Sentry configutation URL.
 	SentryDSN string `pkl:"sentryDSN"`
-
-	// Text file must contain release version or commit hash.
-	ReleaseFilePath string `pkl:"releaseFilePath"`
 }
 
 // LoadFromPath loads the pkl module at the given path and evaluates it into a Config
 func LoadFromPath(ctx context.Context, path string) (ret *Config, err error) {
-    evaluator, err := pkl.NewEvaluator(ctx, pkl.PreconfiguredOptions, func(options *pkl.EvaluatorOptions) {
-        options.CacheDir = "pkl_cache"
-    })
+	evaluator, err := pkl.NewEvaluator(ctx, pkl.PreconfiguredOptions)
 	if err != nil {
 		return nil, err
 	}

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/TikhonP/maigo"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/db"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 	"github.com/getsentry/sentry-go"
 	"github.com/labstack/echo/v4"
 )

@@ -3,9 +3,9 @@ package handler
 import (
 	"net/http"
 
-	"github.com/TikhonP/medsenger-freestylelibre-bot/db"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/util"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/view"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/view"
 	"github.com/labstack/echo/v4"
 )
 
@@ -20,7 +20,7 @@ func (h SettingsHandler) renderPage(c echo.Context, showAddAccount bool) error {
 	if err != nil {
 		return err
 	}
-	var lc *db.LibreClient = nil
+	var lc *db.LibreClient 
 	lc, _ = contract.LibreClient()
 	return util.TemplRender(
 		c,

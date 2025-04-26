@@ -1,35 +1,32 @@
 services:
   server:
-    container_name: agents-freestylelibre
-    image: libre-bot
+    container_name: freestylelibre-server-agent
+    restart: always
     build:
       context: .
       target: prod
-      network: "host"
-      args:
-        SOURCE_COMMIT: $SOURCE_COMMIT
     command: server
-    restart: unless-stopped
     network_mode: "host"
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+    environment:
+      - SOURCE_COMMIT=${SOURCE_COMMIT}
+
   worker:
-    container_name: agents-freestylelibre-worker
-    image: libre-bot
+    container_name: freestylelibre-worker-agent
+    restart: always
     build:
       context: .
       target: prod
-      network: "host"
-      args:
-        SOURCE_COMMIT: $SOURCE_COMMIT
     command: fetch_task
-    restart: unless-stopped
     network_mode: "host"
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+    environment:
+      - SOURCE_COMMIT=${SOURCE_COMMIT}

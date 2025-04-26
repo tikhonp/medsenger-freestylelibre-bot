@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/TikhonP/maigo"
-	util "github.com/TikhonP/medsenger-freestylelibre-bot/util/libre_client"
+	util "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
 	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
 )

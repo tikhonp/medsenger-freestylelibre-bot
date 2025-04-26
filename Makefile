@@ -1,37 +1,38 @@
+SOURCE_COMMIT_SHA := $(shell git rev-parse HEAD)
+
+ENVS := SOURCE_COMMIT=${SOURCE_COMMIT_SHA} COMPOSE_BAKE=true
+
+
+.PHONY: run dev build-dev prod fprod logs-prod go-to-server-container pkl-gen templ tailwind fetch-task
+
 run: dev
 
-dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
 dev:
-	docker compose -f compose.yaml up
+	${ENVS} docker compose -f compose.yaml up
 
-build-dev: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
 build-dev:
-	docker compose -f compose.yaml up --build
+	${ENVS} docker compose -f compose.yaml up --build
 
-prod: export SOURCE_COMMIT=$(shell git rev-parse HEAD)
 prod:
-	docker compose -f compose.prod.yaml up --build -d
+	${ENVS} docker compose -f compose.prod.yaml up --build -d
 
 fprod:
-	docker compose -f compose.prod.yaml down
+	${ENVS} docker compose -f compose.prod.yaml down
 
 logs-prod:
-	docker compose -f compose.prod.yaml logs -f -n 100
+	${ENVS} docker compose -f compose.prod.yaml logs -f -n 100
 
 go-to-server-container:
-	docker exec -it agents-freestylelibre /bin/bash
-
-templ-serve:
-	templ generate -watch -proxy=http://localhost:9990
-
-templ:
-	templ generate
+	docker exec -it --tty freestylelibre-server-agent /bin/bash
 
 pkl-gen:
-	pkl-gen-go pkl/config.pkl --base-path github.com/TikhonP/medsenger-freestylelibre-bot
+	docker exec -it --tty freestylelibre-server-agent pkl-gen-go pkl/config.pkl --base-path github.com/tikhonp/medsenger-freestylelibre-bot
 
-tailwind-serve:
-	tailwindcss -i view/css/input.css -o public/styles.css --watch
+templ:
+	docker exec -it --tty pill-dispenser-agent templ generate
 
 tailwind:
 	tailwindcss -i view/css/input.css -o public/styles.css --minify
+
+fetch-task:
+	docker exec -it --tty freestylelibre-server-agent fetch_task

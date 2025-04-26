@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/TikhonP/maigo"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/config"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/db"
-	"github.com/TikhonP/medsenger-freestylelibre-bot/util"
 	"github.com/getsentry/sentry-go"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 )
 
 func task(mc *maigo.Client) error {
@@ -32,7 +32,10 @@ func main() {
 		panic(err)
 	}
 	if !cfg.Server.Debug {
-		util.StartSentry(cfg.SentryDSN, cfg.ReleaseFilePath)
+		err = util.StartSentry(cfg.SentryDSN)
+		if err != nil {
+			log.Fatalln(err)
+		}
 		defer sentry.Flush(2 * time.Second)
 	}
 	db.MustConnect(cfg.Db)
