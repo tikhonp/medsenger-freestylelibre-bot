@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/TikhonP/maigo"
-	util "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
 	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
+	util "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
 )
 
 // LibreClient contains information about LibreLinkUp account connected to contraact.
@@ -23,6 +23,7 @@ type LibreClient struct {
 	LastSyncDate *time.Time `db:"last_sync_date"`
 	PatientId    *uuid.UUID `db:"patient_id"`
 	ContractId   int        `db:"contract_id"`
+	IsValid      bool       `db:"is_valid"`
 }
 
 var ErrLibreClientNotFound = errors.New("libre client not found")
@@ -46,6 +47,7 @@ func NewLibreClient(email string, password string, contractId int) (*LibreClient
 			libreClient.Email = email
 			libreClient.Password = password
 			libreClient.Token = nil
+			libreClient.IsValid = true
 			err = libreClient.Save()
 			return libreClient, err
 		}
@@ -67,11 +69,11 @@ func (lc *LibreClient) Contract() (*Contract, error) {
 
 func (lc *LibreClient) Save() error {
 	const query = `
-		INSERT INTO libre_clients (id, email, password, token, token_expires, last_sync_date, patient_id, contract_id)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id)
-		DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, token = EXCLUDED.token, token_expires = EXCLUDED.token_expires, last_sync_date = EXCLUDED.last_sync_date, patient_id = EXCLUDED.patient_id, contract_id = EXCLUDED.contract_id
+		INSERT INTO libre_clients (id, email, password, token, token_expires, last_sync_date, patient_id, contract_id, is_valid)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id)
+		DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, token = EXCLUDED.token, token_expires = EXCLUDED.token_expires, last_sync_date = EXCLUDED.last_sync_date, patient_id = EXCLUDED.patient_id, contract_id = EXCLUDED.contract_id, is_valid = EXCLUDED.is_valid
 	`
-	_, err := db.Exec(query, lc.Id, lc.Email, lc.Password, lc.Token, lc.TokenExpires, lc.LastSyncDate, lc.PatientId, lc.ContractId)
+	_, err := db.Exec(query, lc.Id, lc.Email, lc.Password, lc.Token, lc.TokenExpires, lc.LastSyncDate, lc.PatientId, lc.ContractId, lc.IsValid)
 	return err
 }
 
@@ -97,9 +99,18 @@ func GetActiveLibreClientToFetch() ([]LibreClient, error) {
 }
 
 func (lc *LibreClient) sendMessageToDoctor(mc *maigo.Client, text string) {
-	_, err := mc.SendMessage(lc.ContractId, text, maigo.OnlyDoctor())
-	if err != nil {
-		sentry.CaptureException(err)
+	if lc.IsValid {
+		_, err := mc.SendMessage(lc.ContractId, text, maigo.Urgent())
+		if err != nil {
+			sentry.CaptureException(err)
+			return
+		}
+		lc.IsValid = false
+		err = lc.Save()
+		if err != nil {
+			sentry.CaptureException(err)
+			return
+		}
 	}
 }
 

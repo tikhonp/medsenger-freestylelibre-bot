@@ -23,12 +23,15 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
       - POSTGRES_USER=medsenger
       - POSTGRES_DB=freestylelibre-medsenger-bot
       - POSTGRES_PASSWORD=blablabla
+    ports:
+      - "5432:5432"
     healthcheck:
       test: [ "CMD", "pg_isready", "-q", "-U", "medsenger", "-d", "freestylelibre-medsenger-bot" ]
-      interval: 10s
+      interval: 1s
       timeout: 5s
       retries: 5
     networks:
