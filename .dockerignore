@@ -32,3 +32,4 @@ LICENSE
 README.md
 tailwind.config.js
 Makefile
+agents_freestylelibre_nginx.conf

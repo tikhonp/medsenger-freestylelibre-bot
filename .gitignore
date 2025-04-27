@@ -28,3 +28,4 @@ tmp/
 pkl/local/
 node_modules/
 test.rest
+config.pkl

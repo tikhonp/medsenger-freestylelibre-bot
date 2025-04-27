@@ -1,4 +1,4 @@
-package util
+package libreclient
 
 import (
 	"bytes"
@@ -10,6 +10,8 @@ import (
 
 	"github.com/google/uuid"
 )
+
+var ErrIncorrectUsernameOrPassword = errors.New("incorrect username/password")
 
 // host set for rus region. Default is "https://api.libreview.io"
 const host = "https://api.libreview.ru"
@@ -62,20 +64,19 @@ func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 		return nil, err
 	}
 	if responseData.Status != 0 {
-		type (
-			errorResponse struct {
+		type errorResponseData struct {
+			Error struct {
 				Message string `json:"message"`
-			}
-
-			errorResponseData struct {
-				Error errorResponse `json:"error"`
-			}
-		)
+			} `json:"error"`
+		}
 		var errorData errorResponseData
 		err = json.Unmarshal(b.Bytes(), &errorData)
 		if err != nil {
 			return nil, err
 		}
+		if errorData.Error.Message == "incorrect username/password" {
+			return nil, ErrIncorrectUsernameOrPassword
+		} 
 		return nil, errors.New(errorData.Error.Message)
 	}
 	return &responseData.Data, nil

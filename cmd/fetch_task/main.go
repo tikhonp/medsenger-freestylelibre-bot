@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
+	libreclient "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
 )
 
 func task(mc *maigo.Client) {
@@ -17,10 +19,11 @@ func task(mc *maigo.Client) {
 	if err != nil {
 		sentry.CaptureException(err)
 		log.Println("Error:", err)
+		return
 	}
 	for _, lc := range lcs {
 		err := lc.FetchData(mc)
-		if err != nil {
+		if err != nil && errors.Is(err, libreclient.ErrIncorrectUsernameOrPassword) {
 			sentry.CaptureException(err)
 			log.Println("Error:", err)
 		}
@@ -28,7 +31,7 @@ func task(mc *maigo.Client) {
 }
 
 func main() {
-	cfg, err := config.LoadFromPath(context.Background(), "pkl/local/config.pkl")
+	cfg, err := config.LoadFromPath(context.Background(), "config.pkl")
 	if err != nil {
 		panic(err)
 	}
