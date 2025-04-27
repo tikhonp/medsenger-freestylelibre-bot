@@ -10,7 +10,7 @@ import (
 	"github.com/TikhonP/maigo"
 	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
-	util "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
 )
 
 // LibreClient contains information about LibreLinkUp account connected to contraact.
@@ -28,7 +28,7 @@ type LibreClient struct {
 
 var ErrLibreClientNotFound = errors.New("libre client not found")
 
-var llum = util.NewLibreLinkUpManager()
+var llum = libreclient.NewLibreLinkUpManager()
 
 func NewLibreClient(email string, password string, contractId int) (*LibreClient, error) {
 	contract, err := GetContractById(contractId)
@@ -140,7 +140,7 @@ func (lc *LibreClient) fetchPatientId(mc *maigo.Client) error {
 }
 
 // function for get the latest FactoryTimestamp from []util.GlucoseMeasurement
-func getLatestTimestamp(data []util.GlucoseMeasurement) *time.Time {
+func getLatestTimestamp(data []libreclient.GlucoseMeasurement) *time.Time {
 	if len(data) == 0 {
 		return nil
 	}

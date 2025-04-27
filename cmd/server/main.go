@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.LoadFromPath(context.Background(), "pkl/local/config.pkl")
+	cfg, err := config.LoadFromPath(context.Background(), "config.pkl")
 	if err != nil {
 		panic(err)
 	}
