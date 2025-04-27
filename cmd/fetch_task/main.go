@@ -23,7 +23,7 @@ func task(mc *maigo.Client) {
 	}
 	for _, lc := range lcs {
 		err := lc.FetchData(mc)
-		if err != nil && errors.Is(err, libreclient.ErrIncorrectUsernameOrPassword) {
+		if err != nil && !errors.Is(err, libreclient.ErrIncorrectUsernameOrPassword) {
 			sentry.CaptureException(err)
 			log.Println("Error:", err)
 		}
