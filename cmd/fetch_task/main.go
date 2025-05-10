@@ -21,9 +21,12 @@ var sentryExcludedErrors = []error{
 }
 
 func processTaskError(err error) {
+	if err == nil {
+		return
+	}
 	log.Println("Error:", err)
 	errIsRestrictedToSendToSentry := slices.ContainsFunc(sentryExcludedErrors, func(rErr error) bool { return errors.Is(err, rErr) })
-	if err != nil && !errIsRestrictedToSendToSentry {
+	if !errIsRestrictedToSendToSentry {
 		sentry.CaptureException(err)
 	}
 }
