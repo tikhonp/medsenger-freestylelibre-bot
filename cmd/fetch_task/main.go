@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"slices"
 	"time"
 
 	"github.com/TikhonP/maigo"
@@ -14,6 +15,19 @@ import (
 	libreclient "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
 )
 
+var sentryExcludedErrors = []error{
+	libreclient.ErrIncorrectUsernameOrPassword,
+	db.ErrLibreAccountConnectionsIsEmpty,
+}
+
+func processTaskError(err error) {
+	log.Println("Error:", err)
+	errIsRestrictedToSendToSentry := slices.ContainsFunc(sentryExcludedErrors, func(rErr error) bool { return errors.Is(err, rErr) })
+	if err != nil && !errIsRestrictedToSendToSentry {
+		sentry.CaptureException(err)
+	}
+}
+
 func task(mc *maigo.Client) {
 	lcs, err := db.GetActiveLibreClientToFetch()
 	if err != nil {
@@ -23,10 +37,7 @@ func task(mc *maigo.Client) {
 	}
 	for _, lc := range lcs {
 		err := lc.FetchData(mc)
-		if err != nil && !errors.Is(err, libreclient.ErrIncorrectUsernameOrPassword) {
-			sentry.CaptureException(err)
-			log.Println("Error:", err)
-		}
+		processTaskError(err)
 	}
 }
 
