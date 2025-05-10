@@ -26,7 +26,10 @@ type LibreClient struct {
 	IsValid      bool       `db:"is_valid"`
 }
 
-var ErrLibreClientNotFound = errors.New("libre client not found")
+var (
+	ErrLibreClientNotFound            = errors.New("libre client not found")
+	ErrLibreAccountConnectionsIsEmpty = errors.New("account connections is empty")
+)
 
 var llum = libreclient.NewLibreLinkUpManager()
 
@@ -98,7 +101,8 @@ func GetActiveLibreClientToFetch() ([]LibreClient, error) {
 	return clients, err
 }
 
-func (lc *LibreClient) sendMessageToDoctor(mc *maigo.Client, text string) {
+// sendMessageToChat sends message to doctor AND patient with URGENT setting
+func (lc *LibreClient) sendMessageToChat(mc *maigo.Client, text string) {
 	if lc.IsValid {
 		_, err := mc.SendMessage(lc.ContractId, text, maigo.Urgent())
 		if err != nil {
@@ -117,7 +121,7 @@ func (lc *LibreClient) sendMessageToDoctor(mc *maigo.Client, text string) {
 func (lc *LibreClient) fetchToken(mc *maigo.Client) error {
 	user, err := llum.Login(lc.Email, lc.Password)
 	if err != nil {
-		lc.sendMessageToDoctor(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Не удалось войти в систему, проверьте логин и пароль. Ошибка: %s", err.Error()))
+		lc.sendMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Не удалось войти в систему, проверьте логин и пароль. Ошибка: %s", err.Error()))
 		return err
 	}
 	lc.Token = &user.AuthTicket.Token
@@ -128,12 +132,12 @@ func (lc *LibreClient) fetchToken(mc *maigo.Client) error {
 func (lc *LibreClient) fetchPatientId(mc *maigo.Client) error {
 	connections, err := llum.FetchConnections(*lc.Token)
 	if err != nil {
-		lc.sendMessageToDoctor(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Ошибка: %s", err.Error()))
+		lc.sendMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Ошибка: %s", err.Error()))
 		return err
 	}
 	if len(connections) == 0 {
-		lc.sendMessageToDoctor(mc, "Ошибка синхронизации с сервисом Libre Link Up. Не найдено подключенных пациентов для отслеживания.")
-		return errors.New("account connections is empty")
+		lc.sendMessageToChat(mc, "Ошибка синхронизации с сервисом Libre Link Up. Не найдено подключенных пациентов для отслеживания.")
+		return ErrLibreAccountConnectionsIsEmpty
 	}
 	lc.PatientId = &connections[0].PatientId
 	return lc.Save()

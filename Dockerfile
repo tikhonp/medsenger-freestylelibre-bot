@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG GOVERSION=1.24.2
+ARG GOVERSION=1.24.3
 ARG PKL_VERSION=0.28.2
 
 FROM golang:${GOVERSION} AS dev
