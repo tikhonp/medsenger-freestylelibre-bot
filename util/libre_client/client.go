@@ -48,7 +48,12 @@ func (lm LibreLinkUpManager) makeRequest(method, path string, body io.Reader, to
 
 func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New("status code is not 200")
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("status code: %d", resp.StatusCode)
+		} else {
+			return nil, fmt.Errorf("status code: %d response string: %s", resp.StatusCode, string(body))
+		}
 	}
 	type response struct {
 		Status int      `json:"status"`
@@ -76,7 +81,7 @@ func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 		}
 		if errorData.Error.Message == "incorrect username/password" {
 			return nil, ErrIncorrectUsernameOrPassword
-		} 
+		}
 		return nil, errors.New(errorData.Error.Message)
 	}
 	return &responseData.Data, nil
