@@ -1,6 +1,7 @@
 services:
   server:
-    container_name: freestylelibre-server-agent
+    container_name: agents-freestylelibre-server
+    image: docker.telepat.online/agents-freestylelibre-image:latest
     restart: always
     build:
       context: .
@@ -16,7 +17,8 @@ services:
       - SOURCE_COMMIT=${SOURCE_COMMIT}
 
   worker:
-    container_name: freestylelibre-worker-agent
+    container_name: agents-freestylelibre-worker
+    image: docker.telepat.online/agents-freestylelibre-image:latest
     restart: always
     build:
       context: .
