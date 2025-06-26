@@ -1,0 +1,23 @@
+image: docker:24.0.7-dind
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  REGISTRY: docker.telepat.online
+  COMPOSE_FILE: ./configs/docker/compose-prod.yml
+
+stages:
+  - build
+
+before_script:
+  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $REGISTRY
+
+build:
+  stage: build
+  script:
+    - touch .env
+    - docker compose build agents-heart
+    - docker push docker.telepat.online/agents-heart-image:latest
