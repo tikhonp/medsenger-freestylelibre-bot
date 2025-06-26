@@ -13,6 +13,9 @@ dev:
 build-dev:
 	${ENVS} docker compose -f compose.yaml up --build
 
+fdev:
+	${ENVS} docker compose -f compose.yaml down
+
 prod:
 	${ENVS} docker compose -f compose.prod.yaml up --build -d
 
@@ -23,16 +26,16 @@ logs-prod:
 	${ENVS} docker compose -f compose.prod.yaml logs -f -n 100
 
 go-to-server-container:
-	docker exec -it --tty freestylelibre-server-agent /bin/bash
+	docker exec -it --tty agents-freestylelibre-server /bin/bash
 
 pkl-gen:
-	docker exec -it --tty freestylelibre-server-agent pkl-gen-go pkl/config.pkl --base-path github.com/tikhonp/medsenger-freestylelibre-bot
+	docker exec -it --tty agents-freestylelibre-server pkl-gen-go pkl/config.pkl --base-path github.com/tikhonp/medsenger-freestylelibre-bot
 
 templ:
-	docker exec -it --tty pill-dispenser-agent templ generate
+	docker exec -it --tty agents-freestylelibre-server templ generate
 
 tailwind:
 	tailwindcss -i view/css/input.css -o public/styles.css --minify
 
 fetch-task:
-	docker exec -it --tty freestylelibre-server-agent fetch_task
+	docker exec -it --tty agents-freestylelibre-server fetch_task

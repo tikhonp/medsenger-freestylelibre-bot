@@ -1,6 +1,6 @@
 services:
   server:
-    container_name: freestylelibre-server-agent
+    container_name: agents-freestylelibre-server
     build:
       context: .
       target: dev

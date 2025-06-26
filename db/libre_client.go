@@ -10,20 +10,21 @@ import (
 	"github.com/TikhonP/maigo"
 	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
+	libreclient "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
 )
 
 // LibreClient contains information about LibreLinkUp account connected to contraact.
 type LibreClient struct {
-	Id           int        `db:"id"`
-	Email        string     `db:"email"`
-	Password     string     `db:"password"`
-	Token        *string    `db:"token"`
-	TokenExpires *time.Time `db:"token_expires"`
-	LastSyncDate *time.Time `db:"last_sync_date"`
-	PatientId    *uuid.UUID `db:"patient_id"`
-	ContractId   int        `db:"contract_id"`
-	IsValid      bool       `db:"is_valid"`
+	ID                    int        `db:"id"`
+	Email                 string     `db:"email"`
+	Password              string     `db:"password"`
+	Token                 *string    `db:"token"`
+	TokenExpires          *time.Time `db:"token_expires"`
+	LastSyncDate          *time.Time `db:"last_sync_date"`
+	PatientID             *uuid.UUID `db:"patient_id"`
+	ContractID            int        `db:"contract_id"`
+	SyncErrMsgReadyToSend bool       `db:"is_valid"`
+	SyncSuccessMsgSent    bool       `db:"sync_success_msg_sent"`
 }
 
 var (
@@ -33,16 +34,16 @@ var (
 
 var llum = libreclient.NewLibreLinkUpManager()
 
-func NewLibreClient(email string, password string, contractId int) (*LibreClient, error) {
-	contract, err := GetContractById(contractId)
+func NewLibreClient(email string, password string, contractID int) (*LibreClient, error) {
+	contract, err := GetContractByID(contractID)
 	if err != nil {
 		return nil, err
 	}
-	if contract.LibreClientId != nil {
+	if contract.LibreClientID != nil {
 		libreClient, err := contract.LibreClient()
 		if err != nil {
 			if errors.Is(err, ErrLibreClientNotFound) {
-				contract.LibreClientId = nil
+				contract.LibreClientID = nil
 			} else {
 				return nil, err
 			}
@@ -50,37 +51,44 @@ func NewLibreClient(email string, password string, contractId int) (*LibreClient
 			libreClient.Email = email
 			libreClient.Password = password
 			libreClient.Token = nil
-			libreClient.IsValid = true
+			libreClient.SyncErrMsgReadyToSend = true
+			libreClient.SyncSuccessMsgSent = false
 			err = libreClient.Save()
 			return libreClient, err
 		}
 	}
 	const query = `INSERT INTO libre_clients (email, password, contract_id) VALUES ($1, $2, $3) RETURNING *`
 	var lc LibreClient
-	err = db.Get(&lc, query, email, password, contractId)
+	err = db.Get(&lc, query, email, password, contractID)
 	if err != nil {
 		return nil, err
 	}
-	contract.LibreClientId = &lc.Id
+	contract.LibreClientID = &lc.ID
 	err = contract.Save()
-	return &lc, err
+	if err != nil {
+		return nil, fmt.Errorf("failed to create libre client: %w", err)
+	}
+	return &lc, nil
 }
 
 func (lc *LibreClient) Contract() (*Contract, error) {
-	return GetContractById(lc.ContractId)
+	return GetContractByID(lc.ContractID)
 }
 
 func (lc *LibreClient) Save() error {
 	const query = `
-		INSERT INTO libre_clients (id, email, password, token, token_expires, last_sync_date, patient_id, contract_id, is_valid)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id)
-		DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, token = EXCLUDED.token, token_expires = EXCLUDED.token_expires, last_sync_date = EXCLUDED.last_sync_date, patient_id = EXCLUDED.patient_id, contract_id = EXCLUDED.contract_id, is_valid = EXCLUDED.is_valid
+		INSERT INTO libre_clients (id, email, password, token, token_expires, last_sync_date, patient_id, contract_id, is_valid, sync_success_msg_sent)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (id)
+		DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, token = EXCLUDED.token, token_expires = EXCLUDED.token_expires, last_sync_date = EXCLUDED.last_sync_date, patient_id = EXCLUDED.patient_id, contract_id = EXCLUDED.contract_id, is_valid = EXCLUDED.is_valid, sync_success_msg_sent = EXCLUDED.sync_success_msg_sent
 	`
-	_, err := db.Exec(query, lc.Id, lc.Email, lc.Password, lc.Token, lc.TokenExpires, lc.LastSyncDate, lc.PatientId, lc.ContractId, lc.IsValid)
-	return err
+	_, err := db.Exec(query, lc.ID, lc.Email, lc.Password, lc.Token, lc.TokenExpires, lc.LastSyncDate, lc.PatientID, lc.ContractID, lc.SyncErrMsgReadyToSend, lc.SyncSuccessMsgSent)
+	if err != nil {
+		return fmt.Errorf("failed to save libre client: %w", err)
+	}
+	return nil
 }
 
-func GetLibreClientById(id int) (*LibreClient, error) {
+func GetLibreClientByID(id int) (*LibreClient, error) {
 	libreClient := new(LibreClient)
 	err := db.Get(libreClient, `SELECT * FROM libre_clients WHERE id = $1`, id)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -98,18 +106,41 @@ func GetActiveLibreClientToFetch() ([]LibreClient, error) {
     `
 	clients := []LibreClient{}
 	err := db.Select(&clients, query)
-	return clients, err
+	if err != nil {
+		return clients, fmt.Errorf("failed to get active libre clients: %w", err)
+	}
+	return clients, nil
 }
 
-// sendMessageToChat sends message to doctor AND patient with URGENT setting
-func (lc *LibreClient) sendMessageToChat(mc *maigo.Client, text string) {
-	if lc.IsValid {
-		_, err := mc.SendMessage(lc.ContractId, text, maigo.Urgent())
+// sendErrMessageToChat sends message to doctor AND patient with URGENT setting
+// if SyncErrMsgReadyToSend is true, it means that we have an error message ready to send
+func (lc *LibreClient) sendErrMessageToChat(mc *maigo.Client, text string) {
+	if lc.SyncErrMsgReadyToSend {
+		_, err := mc.SendMessage(lc.ContractID, text, maigo.Urgent())
 		if err != nil {
 			sentry.CaptureException(err)
 			return
 		}
-		lc.IsValid = false
+		lc.SyncErrMsgReadyToSend = false
+		lc.SyncSuccessMsgSent = false
+		err = lc.Save()
+		if err != nil {
+			sentry.CaptureException(err)
+			return
+		}
+	}
+}
+
+// sendSuccessMessageToChat sends message to doctor AND patient
+func (lc *LibreClient) sendSuccessMessageToChat(mc *maigo.Client) {
+	if !lc.SyncSuccessMsgSent {
+		_, err := mc.SendMessage(lc.ContractID, "Синхронизация с глюкометром FreeStyle Libre успешно настроена.")
+		if err != nil {
+			sentry.CaptureException(err)
+			return
+		}
+		lc.SyncErrMsgReadyToSend = true
+		lc.SyncSuccessMsgSent = true
 		err = lc.Save()
 		if err != nil {
 			sentry.CaptureException(err)
@@ -121,7 +152,7 @@ func (lc *LibreClient) sendMessageToChat(mc *maigo.Client, text string) {
 func (lc *LibreClient) fetchToken(mc *maigo.Client) error {
 	user, err := llum.Login(lc.Email, lc.Password)
 	if err != nil {
-		lc.sendMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Не удалось войти в систему, проверьте логин и пароль. Ошибка: %s", err.Error()))
+		lc.sendErrMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Не удалось войти в систему, проверьте логин и пароль. Ошибка: %s", err.Error()))
 		return err
 	}
 	lc.Token = &user.AuthTicket.Token
@@ -129,17 +160,17 @@ func (lc *LibreClient) fetchToken(mc *maigo.Client) error {
 	return lc.Save()
 }
 
-func (lc *LibreClient) fetchPatientId(mc *maigo.Client) error {
+func (lc *LibreClient) fetchPatientID(mc *maigo.Client) error {
 	connections, err := llum.FetchConnections(*lc.Token)
 	if err != nil {
-		lc.sendMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Ошибка: %s", err.Error()))
+		lc.sendErrMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Ошибка: %s", err.Error()))
 		return err
 	}
 	if len(connections) == 0 {
-		lc.sendMessageToChat(mc, "Ошибка синхронизации с сервисом Libre Link Up. Не найдено подключенных пациентов для отслеживания.")
+		lc.sendErrMessageToChat(mc, "Ошибка синхронизации с сервисом Libre Link Up. Не найдено подключенных пациентов для отслеживания.")
 		return ErrLibreAccountConnectionsIsEmpty
 	}
-	lc.PatientId = &connections[0].PatientId
+	lc.PatientID = &connections[0].PatientID
 	return lc.Save()
 }
 
@@ -158,7 +189,7 @@ func getLatestTimestamp(data []libreclient.GlucoseMeasurement) *time.Time {
 }
 
 func (lc *LibreClient) FetchData(mc *maigo.Client) error {
-	log.Printf("Fetching data for contract %d", lc.ContractId)
+	log.Printf("Fetching data for contract %d", lc.ContractID)
 
 	now := time.Now().UTC()
 
@@ -172,15 +203,15 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 	}
 
 	// fetch patient id
-	if lc.PatientId == nil {
+	if lc.PatientID == nil {
 		log.Printf("Patient id is nil. Fetching new patient id")
-		err := lc.fetchPatientId(mc)
+		err := lc.fetchPatientID(mc)
 		if err != nil {
 			return err
 		}
 	}
 
-	graph, err := llum.FetchData(*lc.PatientId, *lc.Token)
+	graph, err := llum.FetchData(*lc.PatientID, *lc.Token)
 	if err != nil {
 		return err
 	}
@@ -195,7 +226,7 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 	}
 	if len(records) > 0 {
 		log.Printf("Sending %d records to medsenger", len(records))
-		_, err = mc.AddRecords(lc.ContractId, records)
+		_, err = mc.AddRecords(lc.ContractID, records)
 		if err != nil {
 			return err
 		}
@@ -207,6 +238,8 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 		lc.LastSyncDate = lastSyncDate
 		return lc.Save()
 	}
+
+	lc.sendSuccessMessageToChat(mc)
 
 	return nil
 }

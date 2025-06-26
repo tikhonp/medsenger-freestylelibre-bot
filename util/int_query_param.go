@@ -1,8 +1,9 @@
 package util
 
 import (
-	"github.com/labstack/echo/v4"
 	"strconv"
+
+	"github.com/labstack/echo/v4"
 )
 
 // QueryParamInt returns the value of the query parameter with the specified name as an int.

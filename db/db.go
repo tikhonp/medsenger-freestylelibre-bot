@@ -1,7 +1,9 @@
+// Package db provides a simple interface to interact with the database.
 package db
 
 import (
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
@@ -30,12 +32,13 @@ const schema = `
     );
 
 	ALTER TABLE public.libre_clients ADD COLUMN IF NOT EXISTS is_valid BOOLEAN NOT NULL DEFAULT TRUE;
+	ALTER TABLE public.libre_clients ADD COLUMN IF NOT EXISTS sync_success_msg_sent BOOLEAN NOT NULL DEFAULT FALSE;
 `
 
 // db is a global database.
 //
 // Yes, im dumb and i use global varibles for db.
-// It's my second project in go, i think you can forgive me.
+// It's my second project on go, i think you can forgive me.
 var db *sqlx.DB
 
 func dataSourceName(cfg *config.Database) string {

@@ -3,18 +3,18 @@ package libreclient
 import (
 	"strconv"
 
-	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 	"github.com/google/uuid"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 )
 
 type (
 	User struct {
-		Id                    uuid.UUID  `json:"id"`
+		ID                    uuid.UUID  `json:"id"`
 		FirstName             string     `json:"firstName"`
 		LastName              string     `json:"lastName"`
 		Email                 string     `json:"email"`
 		Country               string     `json:"country"`
-		UiLanguage            string     `json:"uiLanguage"`
+		UILanguage            string     `json:"uiLanguage"`
 		CommunicationLanguage string     `json:"communicationLanguage"`
 		AccountType           string     `json:"accountType"`
 		Uom                   string     `json:"uom"`
@@ -30,8 +30,8 @@ type (
 	}
 
 	LibreConnection struct {
-		Id         uuid.UUID `json:"id"`
-		PatientId  uuid.UUID `json:"patientId"`
+		ID         uuid.UUID `json:"id"`
+		PatientID  uuid.UUID `json:"patientId"`
 		Country    string    `json:"country"`
 		Status     int       `json:"status"`
 		FirstName  string    `json:"firstName"`
@@ -41,7 +41,7 @@ type (
 	}
 
 	PatientDevice struct {
-		DeviceId uuid.UUID      `json:"did"`
+		DeviceID uuid.UUID      `json:"did"`
 		Version  string         `json:"v"`
 		Created  util.Timestamp `json:"created"`
 	}

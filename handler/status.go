@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 	"github.com/labstack/echo/v4"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 )
 
 type statusResponseModel struct {

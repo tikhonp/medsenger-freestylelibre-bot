@@ -7,7 +7,7 @@ import (
 
 const libreTimestampLayout = "1/2/2006 3:04:05 PM"
 
-// Libre time format with 1/2/2006 3:04:05 PM layout.
+// LibreTimeFormat is time format with 1/2/2006 3:04:05 PM layout.
 type LibreTimeFormat struct {
 	time.Time
 }

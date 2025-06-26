@@ -1,15 +1,16 @@
+// Package freestylelibre is a web server for the Freestyle Libre integration bot.
 package freestylelibre
 
 import (
 	"fmt"
 
 	"github.com/TikhonP/maigo"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/handler"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 	sentryecho "github.com/getsentry/sentry-go/echo"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/handler"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 )
 
 type Server struct {
@@ -46,15 +47,15 @@ func (s *Server) Listen() {
 
 	app.File("/styles.css", "public/styles.css")
 	app.GET("/", s.root.Handle)
-	app.POST("/init", s.init.Handle, util.ApiKeyJSON(s.cfg))
-	app.POST("/status", s.status.Handle, util.ApiKeyJSON(s.cfg))
-	app.POST("/remove", s.remove.Handle, util.ApiKeyJSON(s.cfg))
+	app.POST("/init", s.init.Handle, util.APIKeyJSON(s.cfg))
+	app.POST("/status", s.status.Handle, util.APIKeyJSON(s.cfg))
+	app.POST("/remove", s.remove.Handle, util.APIKeyJSON(s.cfg))
 
-	app.GET("/settings", s.settings.Get, util.ApiKeyGetParam(s.cfg))
-	app.POST("/settings", s.settings.Post, util.ApiKeyGetParam(s.cfg))
+	app.GET("/settings", s.settings.Get, util.APIKeyGetParam(s.cfg))
+	app.POST("/settings", s.settings.Post, util.APIKeyGetParam(s.cfg))
 
-	app.GET("/setup", s.settings.Get, util.ApiKeyGetParam(s.cfg))
-	app.POST("/setup", s.settings.Post, util.ApiKeyGetParam(s.cfg))
+	app.GET("/setup", s.settings.Get, util.APIKeyGetParam(s.cfg))
+	app.POST("/setup", s.settings.Post, util.APIKeyGetParam(s.cfg))
 
 	addr := fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port)
 	app.Logger.Fatal(app.Start(addr))

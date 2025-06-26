@@ -1,21 +1,22 @@
+// Package handler provides handlers for HTTP endpoints.
 package handler
 
 import (
 	"net/http"
 
 	"github.com/TikhonP/maigo"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 	"github.com/getsentry/sentry-go"
 	"github.com/labstack/echo/v4"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 )
 
 type initModel struct {
-	ContractId        int    `json:"contract_id" validate:"required"`
-	ClinicId          int    `json:"clinic_id" validate:"required"`
+	ContractID        int    `json:"contract_id" validate:"required"`
+	ClinicID          int    `json:"clinic_id" validate:"required"`
 	AgentToken        string `json:"agent_token" validate:"required"`
 	PatientAgentToken string `json:"patient_agent_token" validate:"required"`
 	DoctorAgentToken  string `json:"doctor_agent_token" validate:"required"`
-	AgentId           int    `json:"agent_id" validate:"required"`
+	AgentID           int    `json:"agent_id" validate:"required"`
 	AgentName         string `json:"agent_name" validate:"required"`
 	Locale            string `json:"locale" validate:"required"`
 }
@@ -25,7 +26,7 @@ type InitHandler struct {
 }
 
 func (h InitHandler) fetchContractDataOnInit(c db.Contract, ctx echo.Context) {
-	ci, err := h.MaigoClient.GetContractInfo(c.Id)
+	ci, err := h.MaigoClient.GetContractInfo(c.ID)
 	if err != nil {
 		sentry.CaptureException(err)
 		ctx.Logger().Error(err)
@@ -39,7 +40,7 @@ func (h InitHandler) fetchContractDataOnInit(c db.Contract, ctx echo.Context) {
 		return
 	}
 	_, err = h.MaigoClient.SendMessage(
-		c.Id,
+		c.ID,
 		"Подключен агент для интеграции глюкометров freestyle libre! Пожалуйста настройте аккаунт Libre Link Up.",
 		maigo.WithAction("Настроить", "/setup", maigo.Action),
 		maigo.OnlyPatient(),
@@ -61,7 +62,7 @@ func (h InitHandler) Handle(c echo.Context) error {
 		return err
 	}
 	contract := db.Contract{
-		Id:         m.ContractId,
+		ID:         m.ContractID,
 		IsActive:   true,
 		AgentToken: &m.AgentToken,
 		Locale:     &m.Locale,
