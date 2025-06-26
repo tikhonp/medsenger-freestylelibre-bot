@@ -35,7 +35,7 @@ const schema = `
 // db is a global database.
 //
 // Yes, im dumb and i use global varibles for db.
-// It's my second project in go, i think you can forgive me.
+// It's my second project on go, i think you can forgive me.
 var db *sqlx.DB
 
 func dataSourceName(cfg *config.Database) string {

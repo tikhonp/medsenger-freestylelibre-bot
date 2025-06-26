@@ -1,13 +1,13 @@
 module github.com/tikhonp/medsenger-freestylelibre-bot
 
-go 1.24.2
+go 1.24.4
 
 require (
 	github.com/TikhonP/maigo v0.4.1
-	github.com/a-h/templ v0.3.898
+	github.com/a-h/templ v0.3.906
 	github.com/apple/pkl-go v0.10.0
-	github.com/getsentry/sentry-go v0.33.0
-	github.com/getsentry/sentry-go/echo v0.33.0
+	github.com/getsentry/sentry-go v0.34.0
+	github.com/getsentry/sentry-go/echo v0.34.0
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
