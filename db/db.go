@@ -1,7 +1,9 @@
+// Package db provides a simple interface to interact with the database.
 package db
 
 import (
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/config"

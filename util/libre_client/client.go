@@ -1,3 +1,4 @@
+// Package libreclient provides a client for the LibreLinkUp API.
 package libreclient
 
 import (
@@ -116,8 +117,8 @@ func (lm LibreLinkUpManager) FetchConnections(token string) ([]LibreConnection, 
 	return *data, nil
 }
 
-func (lm LibreLinkUpManager) FetchData(patientId uuid.UUID, token string) (*GraphData, error) {
-	url := fmt.Sprintf("/llu/connections/%s/graph", patientId.String())
+func (lm LibreLinkUpManager) FetchData(patientID uuid.UUID, token string) (*GraphData, error) {
+	url := fmt.Sprintf("/llu/connections/%s/graph", patientID.String())
 	resp, err := lm.makeRequest(http.MethodGet, url, nil, &token)
 	if err != nil {
 		return nil, err

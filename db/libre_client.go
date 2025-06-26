@@ -10,19 +10,19 @@ import (
 	"github.com/TikhonP/maigo"
 	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
+	libreclient "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
 )
 
 // LibreClient contains information about LibreLinkUp account connected to contraact.
 type LibreClient struct {
-	Id           int        `db:"id"`
+	ID           int        `db:"id"`
 	Email        string     `db:"email"`
 	Password     string     `db:"password"`
 	Token        *string    `db:"token"`
 	TokenExpires *time.Time `db:"token_expires"`
 	LastSyncDate *time.Time `db:"last_sync_date"`
-	PatientId    *uuid.UUID `db:"patient_id"`
-	ContractId   int        `db:"contract_id"`
+	PatientID    *uuid.UUID `db:"patient_id"`
+	ContractID   int        `db:"contract_id"`
 	IsValid      bool       `db:"is_valid"`
 }
 
@@ -33,16 +33,16 @@ var (
 
 var llum = libreclient.NewLibreLinkUpManager()
 
-func NewLibreClient(email string, password string, contractId int) (*LibreClient, error) {
-	contract, err := GetContractById(contractId)
+func NewLibreClient(email string, password string, contractID int) (*LibreClient, error) {
+	contract, err := GetContractByID(contractID)
 	if err != nil {
 		return nil, err
 	}
-	if contract.LibreClientId != nil {
+	if contract.LibreClientID != nil {
 		libreClient, err := contract.LibreClient()
 		if err != nil {
 			if errors.Is(err, ErrLibreClientNotFound) {
-				contract.LibreClientId = nil
+				contract.LibreClientID = nil
 			} else {
 				return nil, err
 			}
@@ -57,17 +57,17 @@ func NewLibreClient(email string, password string, contractId int) (*LibreClient
 	}
 	const query = `INSERT INTO libre_clients (email, password, contract_id) VALUES ($1, $2, $3) RETURNING *`
 	var lc LibreClient
-	err = db.Get(&lc, query, email, password, contractId)
+	err = db.Get(&lc, query, email, password, contractID)
 	if err != nil {
 		return nil, err
 	}
-	contract.LibreClientId = &lc.Id
+	contract.LibreClientID = &lc.ID
 	err = contract.Save()
 	return &lc, err
 }
 
 func (lc *LibreClient) Contract() (*Contract, error) {
-	return GetContractById(lc.ContractId)
+	return GetContractByID(lc.ContractID)
 }
 
 func (lc *LibreClient) Save() error {
@@ -76,11 +76,11 @@ func (lc *LibreClient) Save() error {
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id)
 		DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, token = EXCLUDED.token, token_expires = EXCLUDED.token_expires, last_sync_date = EXCLUDED.last_sync_date, patient_id = EXCLUDED.patient_id, contract_id = EXCLUDED.contract_id, is_valid = EXCLUDED.is_valid
 	`
-	_, err := db.Exec(query, lc.Id, lc.Email, lc.Password, lc.Token, lc.TokenExpires, lc.LastSyncDate, lc.PatientId, lc.ContractId, lc.IsValid)
+	_, err := db.Exec(query, lc.ID, lc.Email, lc.Password, lc.Token, lc.TokenExpires, lc.LastSyncDate, lc.PatientID, lc.ContractID, lc.IsValid)
 	return err
 }
 
-func GetLibreClientById(id int) (*LibreClient, error) {
+func GetLibreClientByID(id int) (*LibreClient, error) {
 	libreClient := new(LibreClient)
 	err := db.Get(libreClient, `SELECT * FROM libre_clients WHERE id = $1`, id)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -104,7 +104,7 @@ func GetActiveLibreClientToFetch() ([]LibreClient, error) {
 // sendMessageToChat sends message to doctor AND patient with URGENT setting
 func (lc *LibreClient) sendMessageToChat(mc *maigo.Client, text string) {
 	if lc.IsValid {
-		_, err := mc.SendMessage(lc.ContractId, text, maigo.Urgent())
+		_, err := mc.SendMessage(lc.ContractID, text, maigo.Urgent())
 		if err != nil {
 			sentry.CaptureException(err)
 			return
@@ -129,7 +129,7 @@ func (lc *LibreClient) fetchToken(mc *maigo.Client) error {
 	return lc.Save()
 }
 
-func (lc *LibreClient) fetchPatientId(mc *maigo.Client) error {
+func (lc *LibreClient) fetchPatientID(mc *maigo.Client) error {
 	connections, err := llum.FetchConnections(*lc.Token)
 	if err != nil {
 		lc.sendMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Ошибка: %s", err.Error()))
@@ -139,7 +139,7 @@ func (lc *LibreClient) fetchPatientId(mc *maigo.Client) error {
 		lc.sendMessageToChat(mc, "Ошибка синхронизации с сервисом Libre Link Up. Не найдено подключенных пациентов для отслеживания.")
 		return ErrLibreAccountConnectionsIsEmpty
 	}
-	lc.PatientId = &connections[0].PatientId
+	lc.PatientID = &connections[0].PatientID
 	return lc.Save()
 }
 
@@ -158,7 +158,7 @@ func getLatestTimestamp(data []libreclient.GlucoseMeasurement) *time.Time {
 }
 
 func (lc *LibreClient) FetchData(mc *maigo.Client) error {
-	log.Printf("Fetching data for contract %d", lc.ContractId)
+	log.Printf("Fetching data for contract %d", lc.ContractID)
 
 	now := time.Now().UTC()
 
@@ -172,15 +172,15 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 	}
 
 	// fetch patient id
-	if lc.PatientId == nil {
+	if lc.PatientID == nil {
 		log.Printf("Patient id is nil. Fetching new patient id")
-		err := lc.fetchPatientId(mc)
+		err := lc.fetchPatientID(mc)
 		if err != nil {
 			return err
 		}
 	}
 
-	graph, err := llum.FetchData(*lc.PatientId, *lc.Token)
+	graph, err := llum.FetchData(*lc.PatientID, *lc.Token)
 	if err != nil {
 		return err
 	}
@@ -195,7 +195,7 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 	}
 	if len(records) > 0 {
 		log.Printf("Sending %d records to medsenger", len(records))
-		_, err = mc.AddRecords(lc.ContractId, records)
+		_, err = mc.AddRecords(lc.ContractID, records)
 		if err != nil {
 			return err
 		}
