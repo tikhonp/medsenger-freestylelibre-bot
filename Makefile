@@ -13,6 +13,9 @@ dev:
 build-dev:
 	${ENVS} docker compose -f compose.yaml up --build
 
+fdev:
+	${ENVS} docker compose -f compose.yaml down
+
 prod:
 	${ENVS} docker compose -f compose.prod.yaml up --build -d
 

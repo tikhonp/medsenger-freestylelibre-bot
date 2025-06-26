@@ -32,6 +32,7 @@ const schema = `
     );
 
 	ALTER TABLE public.libre_clients ADD COLUMN IF NOT EXISTS is_valid BOOLEAN NOT NULL DEFAULT TRUE;
+	ALTER TABLE public.libre_clients ADD COLUMN IF NOT EXISTS sync_success_msg_sent BOOLEAN NOT NULL DEFAULT FALSE;
 `
 
 // db is a global database.
