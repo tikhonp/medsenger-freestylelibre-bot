@@ -7,7 +7,7 @@ variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
   REGISTRY: docker.telepat.online
-  COMPOSE_FILE: ./configs/docker/compose-prod.yml
+  COMPOSE_FILE: ./compose.prod.yaml
 
 stages:
   - build
@@ -20,4 +20,4 @@ build:
   script:
     - touch .env
     - docker compose build agents-heart
-    - docker push docker.telepat.online/agents-heart-image:latest
+    - docker push docker.telepat.online/agents-freestylelibre-image:latest
