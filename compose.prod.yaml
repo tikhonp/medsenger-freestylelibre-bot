@@ -13,8 +13,11 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    env_file:
+      - .env
     environment:
       - SOURCE_COMMIT=${SOURCE_COMMIT}
+      - DEBUG=false
 
   worker:
     container_name: agents-freestylelibre-worker
@@ -30,5 +33,8 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    env_file:
+      - .env
     environment:
       - SOURCE_COMMIT=${SOURCE_COMMIT}
+      - DEBUG=false

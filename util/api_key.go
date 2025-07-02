@@ -8,18 +8,17 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
 )
 
 type apiKeyModel struct {
 	APIKey string `json:"api_key" validate:"required"`
 }
 
-func (k *apiKeyModel) isValid(cfg *config.Server) bool {
+func (k *apiKeyModel) isValid(cfg *Server) bool {
 	return cfg.MedsengerAgentKey == k.APIKey
 }
 
-func APIKeyJSON(cfg *config.Server) echo.MiddlewareFunc {
+func APIKeyJSON(cfg *Server) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// Workaround to read request body twice
@@ -46,7 +45,7 @@ func APIKeyJSON(cfg *config.Server) echo.MiddlewareFunc {
 	}
 }
 
-func APIKeyGetParam(cfg *config.Server) echo.MiddlewareFunc {
+func APIKeyGetParam(cfg *Server) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			apiKey := c.QueryParam("api_key")

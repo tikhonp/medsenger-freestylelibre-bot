@@ -10,7 +10,7 @@ The __GO__ Medsenger bot for CTG monitors integration.
 
 1. Install __docker__ and __make__
 
-2. Create configuration file on `pkl/local/app_config.pkl`
+2. Create configuration file on `.env`
 
 ### Run Development
 
@@ -29,18 +29,6 @@ or
 ```sh
 make build-dev # preferred if config files were changed, so it rebuilds image
 ```
-
-### Modifying config scheme
-
-Config managed by tool [pkl](https://pkl-lang.org/index.html)
-
-If you want to modify config scheme edit file/files in `pkl` directory. After regenerate go code:
-
-```sh
-make pkl-gen
-```
-
-> development docker container must be active
 
 ### HTML templating
 

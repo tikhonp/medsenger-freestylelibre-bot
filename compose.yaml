@@ -11,8 +11,11 @@ services:
         condition: service_healthy
     networks:
       - localnet
+    env_file:
+      - .env
     environment:
       - SOURCE_COMMIT=${SOURCE_COMMIT}
+      - DEBUG=true
     volumes:
       - ./:/src
 
@@ -22,15 +25,17 @@ services:
     restart: always
     volumes:
       - db-data:/var/lib/postgresql/data
+    env_file:
+      - .env
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
-      - POSTGRES_USER=medsenger
-      - POSTGRES_DB=freestylelibre-medsenger-bot
-      - POSTGRES_PASSWORD=blablabla
+      - POSTGRES_USER=${DB_LOGIN}
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     ports:
       - "5432:5432"
     healthcheck:
-      test: [ "CMD", "pg_isready", "-q", "-U", "medsenger", "-d", "freestylelibre-medsenger-bot" ]
+      test: [ "CMD", "pg_isready", "-q", "-U", "${DB_LOGIN}", "-d", "${DB_DATABASE}" ]
       interval: 1s
       timeout: 5s
       retries: 5
