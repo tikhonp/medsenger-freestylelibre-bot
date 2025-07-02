@@ -1,3 +1,6 @@
+only:
+  - main
+
 image: docker:24.0.7-dind
 
 services:
