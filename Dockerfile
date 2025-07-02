@@ -1,24 +1,17 @@
 # syntax=docker/dockerfile:1
 
 ARG GOVERSION=1.24.4
-ARG PKL_VERSION=0.28.2
 
-FROM golang:${GOVERSION} AS dev
-RUN go install "github.com/air-verse/air@latest"
-RUN go install "github.com/apple/pkl-go/cmd/pkl-gen-go@latest"
-RUN go install "github.com/a-h/templ/cmd/templ@latest"
-ARG PKL_VERSION
-RUN curl -L -o /usr/bin/pkl "https://github.com/apple/pkl/releases/download/${PKL_VERSION}/pkl-linux-$(uname -m)" && chmod +x /usr/bin/pkl
+FROM golang:${GOVERSION}-alpine AS dev
+RUN go install "github.com/air-verse/air@latest" && go install "github.com/a-h/templ/cmd/templ@latest"
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 CMD ["air", "-c", ".air.toml"]
 
 
-FROM golang:${GOVERSION} AS prod
+FROM golang:${GOVERSION}-alpine AS prod
 ARG TARGETARCH
-ARG PKL_VERSION
-ADD --chmod=111 "https://github.com/apple/pkl/releases/download/${PKL_VERSION}/pkl-linux-${TARGETARCH}" /bin/pkl
 WORKDIR /src
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \

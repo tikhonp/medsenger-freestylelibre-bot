@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"log"
 	"slices"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/TikhonP/maigo"
 	"github.com/getsentry/sentry-go"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 	libreclient "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
@@ -45,24 +43,20 @@ func task(mc *maigo.Client) {
 }
 
 func main() {
-	cfg, err := config.LoadFromPath(context.Background(), "config.pkl")
-	if err != nil {
-		panic(err)
-	}
+	cfg := util.LoadConfigFromEnv()
 	if !cfg.Server.Debug {
-		err = util.StartSentry(cfg.SentryDSN)
+		err := util.StartSentry(cfg.SentryDSN)
 		if err != nil {
 			log.Fatalln(err)
 		}
 		defer sentry.Flush(2 * time.Second)
 	}
-	db.MustConnect(cfg.Db)
+	db.MustConnect(cfg.DB)
 	client := maigo.Init(cfg.Server.MedsengerAgentKey)
-	sleepDuration := cfg.FetchSleepDuration.GoDuration()
-	ticker := time.NewTicker(sleepDuration)
+	ticker := time.NewTicker(cfg.FetchSleepDuration)
 	for {
 		task(client)
-		log.Println("Task completed. Sleeping for", sleepDuration)
+		log.Println("Task completed. Sleeping for", cfg.FetchSleepDuration)
 		<-ticker.C
 	}
 }

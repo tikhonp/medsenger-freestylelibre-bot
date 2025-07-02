@@ -6,7 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 )
 
 const schema = `
@@ -41,12 +41,12 @@ const schema = `
 // It's my second project on go, i think you can forgive me.
 var db *sqlx.DB
 
-func dataSourceName(cfg *config.Database) string {
+func dataSourceName(cfg *util.Database) string {
 	return fmt.Sprintf("user=%s dbname=%s sslmode=disable password=%s host=%s", cfg.User, cfg.Dbname, cfg.Password, cfg.Host)
 }
 
 // MustConnect creates a new in-memory SQLite database and initializes it with the schema.
-func MustConnect(cfg *config.Database) {
+func MustConnect(cfg *util.Database) {
 	db = sqlx.MustConnect("postgres", dataSourceName(cfg))
 	db.MustExec(schema)
 }

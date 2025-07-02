@@ -3,7 +3,7 @@ SOURCE_COMMIT_SHA := $(shell git rev-parse HEAD)
 ENVS := SOURCE_COMMIT=${SOURCE_COMMIT_SHA} COMPOSE_BAKE=true
 
 
-.PHONY: run dev build-dev prod fprod logs-prod go-to-server-container pkl-gen templ tailwind fetch-task
+.PHONY: run dev build-dev prod fprod logs-prod go-to-server-container templ tailwind fetch-task
 
 run: dev
 
@@ -26,10 +26,7 @@ logs-prod:
 	${ENVS} docker compose -f compose.prod.yaml logs -f -n 100
 
 go-to-server-container:
-	docker exec -it --tty agents-freestylelibre-server /bin/bash
-
-pkl-gen:
-	docker exec -it --tty agents-freestylelibre-server pkl-gen-go pkl/config.pkl --base-path github.com/tikhonp/medsenger-freestylelibre-bot
+	docker exec -it --tty agents-freestylelibre-server /bin/sh
 
 templ:
 	docker exec -it --tty agents-freestylelibre-server templ generate

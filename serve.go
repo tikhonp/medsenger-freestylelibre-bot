@@ -8,13 +8,12 @@ import (
 	sentryecho "github.com/getsentry/sentry-go/echo"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/tikhonp/medsenger-freestylelibre-bot/config"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/handler"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 )
 
 type Server struct {
-	cfg      *config.Server
+	cfg      *util.Server
 	root     handler.RootHandler
 	init     handler.InitHandler
 	status   handler.StatusHandler
@@ -22,7 +21,7 @@ type Server struct {
 	settings handler.SettingsHandler
 }
 
-func NewServer(cfg *config.Server) *Server {
+func NewServer(cfg *util.Server) *Server {
 	maigoClient := maigo.Init(cfg.MedsengerAgentKey)
 	return &Server{
 		cfg:  cfg,
