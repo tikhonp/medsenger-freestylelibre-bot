@@ -33,3 +33,9 @@ README.md
 tailwind.config.js
 Makefile
 agents_freestylelibre_nginx.conf
+.air.toml
+.env.example
+.github/
+.gitlab-ci.yml
+compose.prod.yaml
+test.rest

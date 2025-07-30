@@ -26,5 +26,5 @@ build:
   stage: build
   script:
     - touch .env
-    - docker compose build server
+    - docker build -t docker.telepat.online/agents-freestylelibre-image:latest --target prod .
     - docker push docker.telepat.online/agents-freestylelibre-image:latest

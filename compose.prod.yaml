@@ -2,10 +2,7 @@ services:
   server:
     container_name: agents-freestylelibre-server
     image: docker.telepat.online/agents-freestylelibre-image:latest
-    restart: always
-    build:
-      context: .
-      target: prod
+    restart: unless-stopped
     command: server
     network_mode: "host"
     logging:
@@ -22,10 +19,7 @@ services:
   worker:
     container_name: agents-freestylelibre-worker
     image: docker.telepat.online/agents-freestylelibre-image:latest
-    restart: always
-    build:
-      context: .
-      target: prod
+    restart: unless-stopped
     command: fetch_task
     network_mode: "host"
     logging:

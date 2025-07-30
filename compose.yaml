@@ -5,12 +5,10 @@ services:
       context: .
       target: dev
     ports:
-      - 3036:3036
+      - "3036:3036"
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - localnet
     env_file:
       - .env
     environment:
@@ -39,14 +37,7 @@ services:
       interval: 1s
       timeout: 5s
       retries: 5
-    networks:
-      - localnet
-    hostname: db
 
 volumes:
   db-data:
     name: "freestylelibre-db-data"
-
-networks:
-  localnet:
-    driver: bridge
