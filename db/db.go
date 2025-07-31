@@ -42,7 +42,7 @@ const schema = `
 var db *sqlx.DB
 
 func dataSourceName(cfg *util.Database) string {
-	return fmt.Sprintf("user=%s dbname=%s sslmode=disable password=%s host=%s", cfg.User, cfg.Dbname, cfg.Password, cfg.Host)
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Dbname)
 }
 
 // MustConnect creates a new in-memory SQLite database and initializes it with the schema.

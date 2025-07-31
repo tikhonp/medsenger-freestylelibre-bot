@@ -1,34 +1,60 @@
 services:
-  server:
+  agents-freestylelibre:
+    image: docker.telepat.online/agents-freestylelibre-image:latest
     container_name: agents-freestylelibre-server
-    image: docker.telepat.online/agents-freestylelibre-image:latest
-    restart: unless-stopped
+    env_file:
+      - .env
+      - enviroments/pilldispenser.env
+    environment:
+      - source_commit=${source_commit}
+      - debug=false
+      - db_password=${postgres_password}
+      - server_host="${protocol}://pills.${agent_domain}"
+      - server_port=80
     command: server
-    network_mode: "host"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    env_file:
-      - .env
-    environment:
-      - SOURCE_COMMIT=${SOURCE_COMMIT}
-      - DEBUG=false
-
-  worker:
-    container_name: agents-freestylelibre-worker
-    image: docker.telepat.online/agents-freestylelibre-image:latest
     restart: unless-stopped
-    command: fetch_task
-    network_mode: "host"
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - agents-net
+    labels:
+      - dev.dozzle.group=agents-freestylelibre
+      - com.centurylinklabs.watchtower.enable=true
+    expose:
+      - "80"
+
+  agents-freestylelibre-worker:
+    image: docker.telepat.online/agents-freestylelibre-image:latest
+    container_name: agents-freestylelibre-worker
     env_file:
       - .env
+      - enviroments/pilldispenser.env
     environment:
       - SOURCE_COMMIT=${SOURCE_COMMIT}
       - DEBUG=false
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - SERVER_HOST="${PROTOCOL}://pills.${AGENT_DOMAIN}"
+      - SERVER_PORT=80
+    command: fetch_task
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - agents-net
+    labels:
+      - dev.dozzle.group=agents-freestylelibre
+      - com.centurylinklabs.watchtower.enable=true
+    expose:
+      - "80"
