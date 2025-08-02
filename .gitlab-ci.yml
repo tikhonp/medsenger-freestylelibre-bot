@@ -4,27 +4,49 @@ workflow:
       when: always
     - when: never
 
-image: docker:24.0.7-dind
+image: docker:28
 
 services:
   - docker:dind
 
 variables:
-  DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375
   REGISTRY: docker.telepat.online
-  COMPOSE_FILE: ./compose.prod.yaml
+  IMAGE_NAME: agents-freestylelibre-image
   SOURCE_COMMIT: $CI_COMMIT_SHA
 
 stages:
   - build
+  - manifest
 
-before_script:
-  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $REGISTRY
+.before_build_template: &before_build_template
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $REGISTRY
+    - docker buildx create --use || docker buildx use default
 
 build:
   stage: build
-  script:
-    - touch .env
-    - docker build -t docker.telepat.online/agents-freestylelibre-image:latest --target prod .
-    - docker push docker.telepat.online/agents-freestylelibre-image:latest
+  parallel:
+    matrix:
+      - ARCH: amd64
+        RUNNER_TAG: amd64
+        DARCH: "linux/amd64"
+      - ARCH: arm64v8
+        RUNNER_TAG: arm64v8
+        DARCH: "linux/arm64/v8"
+  tags:
+    - $RUNNER_TAG
+  <<: *before_build_template
+  script: docker buildx build --platform=$DARCH --target prod -t $REGISTRY/$IMAGE_NAME:$ARCH-latest --push .
+
+create-manifest:
+  stage: manifest
+  image: docker:28
+  tags:
+    - amd64
+  <<: *before_build_template
+  script: docker buildx imagetools create --tag $REGISTRY/$IMAGE_NAME:latest $REGISTRY/$IMAGE_NAME:amd64-latest $REGISTRY/$IMAGE_NAME:arm64v8-latest
+  needs:
+    - job: build
+      artifacts: false
