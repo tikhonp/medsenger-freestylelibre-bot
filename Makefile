@@ -17,13 +17,13 @@ fdev:
 	${ENVS} docker compose -f compose.yaml down
 
 prod:
-	${ENVS} docker compose -f compose.prod.yaml up --build -d
+	docker compose -f compose.test-prod.yaml up --build -d
 
 fprod:
-	${ENVS} docker compose -f compose.prod.yaml down
+	docker compose -f compose.test-prod.yaml down
 
 logs-prod:
-	${ENVS} docker compose -f compose.prod.yaml logs -f -n 100
+	docker compose -f compose.test-prod.yaml logs -f -n 100
 
 go-to-server-container:
 	docker exec -it --tty agents-freestylelibre-server /bin/sh
@@ -38,4 +38,5 @@ fetch-task:
 	docker exec -it --tty agents-freestylelibre-server fetch_task
 
 build-prod-image:
-	${ENVS} docker build -t docker.telepat.online/agents-freestylelibre-image:latest --target prod .
+	docker buildx build --build-arg SOURCE_COMMIT="${SOURCE_COMMIT_SHA}" --target server-prod -t docker.telepat.online/agents-freestylelibre-image:server-latest .
+	docker buildx build --build-arg SOURCE_COMMIT="${SOURCE_COMMIT_SHA}" --target worker-prod -t docker.telepat.online/agents-freestylelibre-image:worker-latest .

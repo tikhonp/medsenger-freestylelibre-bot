@@ -3,6 +3,7 @@ package freestylelibre
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/TikhonP/maigo"
 	sentryecho "github.com/getsentry/sentry-go/echo"
@@ -31,18 +32,25 @@ func NewServer(cfg *util.Server) *Server {
 
 func (s *Server) Listen() {
 	app := echo.New()
+
 	app.Debug = s.cfg.Debug
 	app.HideBanner = true
-	app.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "[${time_rfc3339}] ${status} ${method} ${path} (${remote_ip}) ${latency_human}\n",
-		Output: app.Logger.Output(),
-	}))
-	app.Use(middleware.Recover())
-	if !s.cfg.Debug {
-		app.Use(sentryecho.New(sentryecho.Options{Repanic: true}))
-		app.Logger.Printf("Sentry initialized")
-	}
 	app.Validator = util.NewDefaultValidator()
+
+	if app.Debug {
+		app.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+			Format: "[${time_rfc3339}] ${status} ${method} ${path} (${remote_ip}) ${latency_human}\n",
+			Output: app.Logger.Output(),
+		}))
+	} else {
+		app.Use(sentryecho.New(sentryecho.Options{
+			Repanic:         true,
+			WaitForDelivery: false,
+			Timeout:         5 * time.Second,
+		}))
+		app.Use(middleware.Logger())
+	}
+	app.Use(middleware.Recover())
 
 	app.File("/styles.css", "public/styles.css")
 	app.GET("/", s.root.Handle)
@@ -56,6 +64,6 @@ func (s *Server) Listen() {
 	app.GET("/setup", s.settings.Get, util.APIKeyGetParam(s.cfg))
 	app.POST("/setup", s.settings.Post, util.APIKeyGetParam(s.cfg))
 
-	addr := fmt.Sprintf("%s:%d", s.cfg.Host, s.cfg.Port)
+	addr := fmt.Sprintf(":%d", s.cfg.Port)
 	app.Logger.Fatal(app.Start(addr))
 }

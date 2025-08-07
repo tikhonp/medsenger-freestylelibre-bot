@@ -14,11 +14,12 @@ func StartSentry(dsn string) error {
 	return sentry.Init(sentry.ClientOptions{
 		Dsn:              dsn,
 		Debug:            false,
-		AttachStacktrace: true,
-		SampleRate:       1.0,
+		SendDefaultPII:   true,
 		EnableTracing:    true,
 		TracesSampleRate: 1.0,
-		SendDefaultPII:   true,
+		EnableLogs:       true,
+		AttachStacktrace: true,
+		SampleRate:       1.0,
 		Release:          releaseVersion,
 		BeforeSend: func(event *sentry.Event, hint *sentry.EventHint) *sentry.Event {
 			if strings.Contains(event.Message, "incorrect username/password") {

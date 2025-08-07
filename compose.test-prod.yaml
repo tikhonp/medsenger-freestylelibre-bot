@@ -1,0 +1,26 @@
+services:
+  server:
+    container_name: agents-freestylelibre-server
+    image: docker.telepat.online/agents-freestylelibre-image:server-latest
+    restart: unless-stopped
+    network_mode: "host"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    env_file:
+      - .env
+
+  worker:
+    container_name: agents-freestylelibre-worker
+    image: docker.telepat.online/agents-freestylelibre-image:worker-latest
+    restart: unless-stopped
+    network_mode: "host"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    env_file:
+      - .env

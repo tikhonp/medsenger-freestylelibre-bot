@@ -1,17 +1,12 @@
 services:
   agents-freestylelibre:
-    image: docker.telepat.online/agents-freestylelibre-image:latest
+    image: docker.telepat.online/agents-freestylelibre-image:server-latest
     container_name: agents-freestylelibre-server
     env_file:
       - .env
       - enviroments/freestylelibre.env
     environment:
-      - SOURCE_COMMIT=${source_commit}
-      - DEBUG=false
-      - DB_PASSWORD=${postgres_password}
-      - SERVER_HOST=""
-      - SERVER_PORT=80
-    command: server
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -19,29 +14,22 @@ services:
         max-size: "10m"
         max-file: "3"
     depends_on:
-      postgres:
-        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     networks:
       - agents-net
     labels:
       - dev.dozzle.group=agents-freestylelibre
       - com.centurylinklabs.watchtower.enable=true
-    expose:
-      - "80"
 
   agents-freestylelibre-worker:
-    image: docker.telepat.online/agents-freestylelibre-image:latest
+    image: docker.telepat.online/agents-freestylelibre-image:worker-latest
     container_name: agents-freestylelibre-worker
     env_file:
       - .env
       - enviroments/freestylelibre.env
     environment:
-      - SOURCE_COMMIT=${SOURCE_COMMIT}
-      - DEBUG=false
       - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - SERVER_HOST=""
-      - SERVER_PORT=80
-    command: fetch_task
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -49,12 +37,12 @@ services:
         max-size: "10m"
         max-file: "3"
     depends_on:
-      postgres:
-        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+      agents-freestylelibre:
+        condition: service_started
     networks:
       - agents-net
     labels:
       - dev.dozzle.group=agents-freestylelibre
       - com.centurylinklabs.watchtower.enable=true
-    expose:
-      - "80"
