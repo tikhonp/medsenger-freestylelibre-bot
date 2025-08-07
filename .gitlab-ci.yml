@@ -38,8 +38,8 @@ build:
     - $RUNNER_TAG
   <<: *before_build_template
   script: 
-    - docker buildx build --build-arg SOURCE_COMMIT="${SOURCE_COMMIT_SHA}" --platform=$DARCH --target server-prod -t $REGISTRY/$IMAGE_NAME:$ARCH-server-latest --push .
-    - docker buildx build --build-arg SOURCE_COMMIT="${SOURCE_COMMIT_SHA}" --platform=$DARCH --target worker-prod -t $REGISTRY/$IMAGE_NAME:$ARCH-worker-latest --push .
+    - docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=$DARCH --target server-prod -t $REGISTRY/$IMAGE_NAME:$ARCH-server-latest --push .
+    - docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=$DARCH --target worker-prod -t $REGISTRY/$IMAGE_NAME:$ARCH-worker-latest --push .
 
 
 create-manifest:
