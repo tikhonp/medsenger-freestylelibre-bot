@@ -153,25 +153,33 @@ func (lc *LibreClient) fetchToken(mc *maigo.Client) error {
 	user, err := llum.Login(lc.Email, lc.Password)
 	if err != nil {
 		lc.sendErrMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Не удалось войти в систему, проверьте логин и пароль. Ошибка: %s", err.Error()))
-		return err
+		return fmt.Errorf("fetch token: %w", err)
 	}
 	lc.Token = &user.AuthTicket.Token
 	lc.TokenExpires = &user.AuthTicket.Expires.Time
-	return lc.Save()
+	err = lc.Save()
+	if err != nil {
+		return fmt.Errorf("fetch token: %w", err)
+	}
+	return nil
 }
 
 func (lc *LibreClient) fetchPatientID(mc *maigo.Client) error {
 	connections, err := llum.FetchConnections(*lc.Token)
 	if err != nil {
 		lc.sendErrMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Ошибка: %s", err.Error()))
-		return err
+		return fmt.Errorf("fetch patient id: %w", err)
 	}
 	if len(connections) == 0 {
 		lc.sendErrMessageToChat(mc, "Ошибка синхронизации с сервисом Libre Link Up. Не найдено подключенных пациентов для отслеживания.")
-		return ErrLibreAccountConnectionsIsEmpty
+		return fmt.Errorf("fetch patient id: %w", ErrLibreAccountConnectionsIsEmpty)
 	}
 	lc.PatientID = &connections[0].PatientID
-	return lc.Save()
+	err = lc.Save()
+	if err != nil {
+		return fmt.Errorf("fetch patient id: %w", err)
+	}
+	return nil
 }
 
 // function for get the latest FactoryTimestamp from []util.GlucoseMeasurement

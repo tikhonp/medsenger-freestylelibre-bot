@@ -121,7 +121,11 @@ func (lm LibreLinkUpManager) FetchData(patientID uuid.UUID, token string) (*Grap
 	url := fmt.Sprintf("/llu/connections/%s/graph", patientID.String())
 	resp, err := lm.makeRequest(http.MethodGet, url, nil, &token)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("fetch data: %w", err)
 	}
-	return decodeResponse[GraphData](resp)
+	graphData, err := decodeResponse[GraphData](resp)
+	if err != nil {
+		return nil, fmt.Errorf("fetch data: %w", err)
+	}
+	return graphData, nil
 }

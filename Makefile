@@ -3,7 +3,7 @@ SOURCE_COMMIT_SHA := $(shell git rev-parse HEAD)
 ENVS := SOURCE_COMMIT=${SOURCE_COMMIT_SHA} COMPOSE_BAKE=true
 
 
-.PHONY: run dev build-dev prod fprod logs-prod go-to-server-container templ tailwind fetch-task build-prod-image
+.PHONY: run dev build-dev prod fprod logs-prod go-to-server-container templ tailwind fetch-task build-prod-image update-deps
 
 run: dev
 
@@ -40,3 +40,6 @@ fetch-task:
 build-prod-image:
 	docker buildx build --build-arg SOURCE_COMMIT="${SOURCE_COMMIT_SHA}" --target server-prod -t docker.telepat.online/agents-freestylelibre-image:server-latest .
 	docker buildx build --build-arg SOURCE_COMMIT="${SOURCE_COMMIT_SHA}" --target worker-prod -t docker.telepat.online/agents-freestylelibre-image:worker-latest .
+
+update-deps:
+	docker exec -it --tty agents-freestylelibre-server go get -u ./...
