@@ -24,6 +24,8 @@ func StartSentry(dsn string) error {
 		BeforeSend: func(event *sentry.Event, hint *sentry.EventHint) *sentry.Event {
 			if strings.Contains(event.Message, "incorrect username/password") {
 				return nil
+			} else if strings.Contains(event.Message, "invalid auth session") {
+				return nil
 			}
 			return event
 		},

@@ -8,11 +8,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 )
 
-var ErrIncorrectUsernameOrPassword = errors.New("incorrect username/password")
+var (
+	ErrIncorrectUsernameOrPassword = errors.New("incorrect username/password")
+	ErrInvalidAuthSession          = errors.New("invalid auth session")
+)
 
 // host set for rus region. Default is "https://api.libreview.io"
 const host = "https://api.libreview.ru"
@@ -53,7 +57,11 @@ func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 		if err != nil {
 			return nil, fmt.Errorf("status code: %d", resp.StatusCode)
 		} else {
-			return nil, fmt.Errorf("status code: %d response string: %s", resp.StatusCode, string(body))
+			respStr := string(body)
+			if strings.Contains(respStr, "invalid auth session") {
+				return nil, ErrInvalidAuthSession
+			}
+			return nil, fmt.Errorf("status code: %d response string: %s", resp.StatusCode, respStr)
 		}
 	}
 	type response struct {

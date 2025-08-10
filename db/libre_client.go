@@ -196,6 +196,21 @@ func getLatestTimestamp(data []libreclient.GlucoseMeasurement) *time.Time {
 	return &timestamp
 }
 
+func (lc *LibreClient) fetchData() (*libreclient.GraphData, error) {
+	graph, err := llum.FetchData(*lc.PatientID, *lc.Token)
+	if errors.Is(err, libreclient.ErrInvalidAuthSession) {
+		lc.Token = nil
+		err = lc.Save()
+		if err != nil {
+			return nil, fmt.Errorf("fetch data: %w", err)
+		}
+		return nil, libreclient.ErrInvalidAuthSession
+	} else if err != nil {
+		return nil, fmt.Errorf("fetch data: %w", err)
+	}
+	return graph, nil
+}
+
 func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 	log.Printf("Fetching data for contract %d", lc.ContractID)
 
@@ -219,7 +234,7 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 		}
 	}
 
-	graph, err := llum.FetchData(*lc.PatientID, *lc.Token)
+	graph, err := lc.fetchData()
 	if err != nil {
 		return err
 	}
