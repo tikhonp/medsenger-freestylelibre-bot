@@ -20,23 +20,21 @@ RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
     CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/fetch_task ./cmd/fetch_task
 
-FROM alpine AS server-prod
+FROM alpine AS pre-prod
 WORKDIR /src
-COPY --from=build-prod /bin/server /bin/
+COPY --from=build-prod /usr/local/go/lib/time/zoneinfo.zip /
+ENV ZONEINFO=/zoneinfo.zip
 COPY . .
-EXPOSE 80
 ENV DEBUG=false
 ARG SOURCE_COMMIT
 ENV SOURCE_COMMIT=${SOURCE_COMMIT}
 ENV SERVER_PORT=80
+
+FROM pre-prod AS server-prod
+COPY --from=build-prod /bin/server /bin/
+EXPOSE 80
 ENTRYPOINT ["server"]
 
-FROM alpine AS worker-prod
-WORKDIR /src
+FROM pre-prod AS worker-prod
 COPY --from=build-prod /bin/fetch_task /bin/
-COPY . .
-ENV DEBUG=false
-ARG SOURCE_COMMIT
-ENV SOURCE_COMMIT=${SOURCE_COMMIT}
-ENV SERVER_PORT=80
 ENTRYPOINT ["fetch_task"]
