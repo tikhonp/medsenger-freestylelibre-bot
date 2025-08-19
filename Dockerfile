@@ -10,15 +10,16 @@ RUN go mod download && go mod verify
 CMD ["air", "-c", ".air.toml"]
 
 
-FROM golang:${GOVERSION}-alpine AS build-prod
+FROM  --platform=$BUILDPLATFORM golang:${GOVERSION}-alpine AS build-prod
+ARG TARGETOS
 ARG TARGETARCH
 WORKDIR /src
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
-    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/server ./cmd/server
+    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /bin/server ./cmd/server
 RUN --mount=type=cache,target=/go/pkg/mod/ \
     --mount=type=bind,target=. \
-    CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o /bin/fetch_task ./cmd/fetch_task
+    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /bin/fetch_task ./cmd/fetch_task
 
 FROM alpine AS pre-prod
 WORKDIR /src
