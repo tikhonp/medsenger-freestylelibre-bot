@@ -17,40 +17,16 @@ variables:
 
 stages:
   - build
-  - manifest
 
-.before_build_template: &before_build_template
-  before_script:
+build-multiarch:
+  stage: build
+  tags:
+    - macmini-builder
+  script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $REGISTRY
+
     - docker buildx create --use || docker buildx use default
 
-build:
-  stage: build
-  parallel:
-    matrix:
-      - ARCH: amd64
-        RUNNER_TAG: amd64
-        DARCH: "linux/amd64"
-      - ARCH: arm64v8
-        RUNNER_TAG: arm64v8
-        DARCH: "linux/arm64/v8"
-  tags:
-    - $RUNNER_TAG
-  <<: *before_build_template
-  script: 
-    - docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=$DARCH --target server-prod -t $REGISTRY/$IMAGE_NAME:$ARCH-server-latest --push .
-    - docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=$DARCH --target worker-prod -t $REGISTRY/$IMAGE_NAME:$ARCH-worker-latest --push .
+    - docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=linux/amd64,linux/arm64/v8 --target server-prod -t $REGISTRY/$IMAGE_NAME:server-latest --push .
 
-
-create-manifest:
-  stage: manifest
-  image: docker:28
-  tags:
-    - amd64
-  <<: *before_build_template
-  script: 
-    - docker buildx imagetools create --tag $REGISTRY/$IMAGE_NAME:server-latest $REGISTRY/$IMAGE_NAME:amd64-server-latest $REGISTRY/$IMAGE_NAME:arm64v8-server-latest
-    - docker buildx imagetools create --tag $REGISTRY/$IMAGE_NAME:worker-latest $REGISTRY/$IMAGE_NAME:amd64-worker-latest $REGISTRY/$IMAGE_NAME:arm64v8-worker-latest
-  needs:
-    - job: build
-      artifacts: false
+    - docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=linux/amd64,linux/arm64/v8 --target worker-prod -t $REGISTRY/$IMAGE_NAME:worker-latest --push .
