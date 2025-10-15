@@ -16,8 +16,6 @@ type Config struct {
 
 	// Sentry configutation URL.
 	SentryDSN string
-
-	LibreClientLLUVersion string
 }
 
 type Server struct {
@@ -69,8 +67,7 @@ func LoadConfigFromEnv() *Config {
 			Password: os.Getenv("DB_PASSWORD"),
 			Dbname:   os.Getenv("DB_DATABASE"),
 		},
-		FetchSleepDuration:    time.Duration(fetchSleepDuration) * time.Minute,
-		SentryDSN:             os.Getenv("SENTRY_DSN"),
-		LibreClientLLUVersion: os.Getenv("LIBRE_CLIENT_LLU_VERSION"),
+		FetchSleepDuration: time.Duration(fetchSleepDuration) * time.Minute,
+		SentryDSN:          os.Getenv("SENTRY_DSN"),
 	}
 }
