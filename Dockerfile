@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG GOVERSION=1.24.6
+ARG GOVERSION=1.25.3
 
 FROM golang:${GOVERSION}-alpine AS dev
 RUN go install "github.com/air-verse/air@latest" && go install "github.com/a-h/templ/cmd/templ@latest"
