@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/google/uuid"
@@ -36,7 +35,7 @@ func setDefaultHeaders(r *http.Request) {
 	r.Header.Set("connection", "Keep-Alive")
 	r.Header.Set("content-type", "application/json")
 	r.Header.Set("product", "llu.android")
-	r.Header.Set("version", os.Getenv("LIBRE_CLIENT_LLU_VERSION"))
+	r.Header.Set("version", "4.7")
 }
 
 func (lm LibreLinkUpManager) makeRequest(method, path string, body io.Reader, token *string) (*http.Response, error) {
