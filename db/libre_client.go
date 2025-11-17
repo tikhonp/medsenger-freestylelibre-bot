@@ -213,7 +213,7 @@ func (lc *LibreClient) fetchData() (*libreclient.GraphData, error) {
 		lc.Token = nil
 		err = lc.Save()
 		if err != nil {
-			return nil, fmt.Errorf("fetch data: %w", err)
+			return nil, fmt.Errorf("fetch data set token nil err: %w", err)
 		}
 		return nil, libreclient.ErrInvalidAuthSession
 	} else if err != nil {
