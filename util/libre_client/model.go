@@ -59,7 +59,7 @@ type (
 		MeasurementColor int             `json:"MeasurementColor"`
 		GlucoseUnits     int             `json:"GlucoseUnits"`
 		Value            float64         `json:"Value"`
-		IsHigh           bool            `json:"isHight"`
+		IsHigh           bool            `json:"isHigh"`
 		IsLow            bool            `json:"isLow"`
 	}
 
