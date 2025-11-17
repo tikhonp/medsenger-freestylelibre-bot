@@ -7,4 +7,4 @@ cmd = "go build -o /tmp/main ./cmd/server/main.go"
 bin = "/tmp/main"
 include_ext = ["go", "templ"]
 exclude_regex = ["_templ\\.go"]
-exclude_dir = ["pkl", "internal/db/migrations", "public", "view/css"]
+exclude_dir = ["pkl", "internal/db/migrations", "public", "view/css", "test"]
