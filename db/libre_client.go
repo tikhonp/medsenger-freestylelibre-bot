@@ -1,7 +1,9 @@
 package db
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
@@ -15,11 +17,13 @@ import (
 
 // LibreClient contains information about LibreLinkUp account connected to contraact.
 type LibreClient struct {
-	ID                    int        `db:"id"`
-	Email                 string     `db:"email"`
-	Password              string     `db:"password"`
-	Token                 *string    `db:"token"`
-	TokenExpires          *time.Time `db:"token_expires"`
+	ID           int        `db:"id"`
+	Email        string     `db:"email"`
+	Password     string     `db:"password"`
+	Token        *string    `db:"token"`
+	TokenExpires *time.Time `db:"token_expires"`
+	// Account-Id is the SHA-256 hex digest of the user.id UUID exactly as returned in the login response
+	AccountID             *string    `db:"account_id"`
 	LastSyncDate          *time.Time `db:"last_sync_date"`
 	PatientID             *uuid.UUID `db:"patient_id"`
 	ContractID            int        `db:"contract_id"`
@@ -77,11 +81,11 @@ func (lc *LibreClient) Contract() (*Contract, error) {
 
 func (lc *LibreClient) Save() error {
 	const query = `
-		INSERT INTO libre_clients (id, email, password, token, token_expires, last_sync_date, patient_id, contract_id, is_valid, sync_success_msg_sent)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (id)
-		DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, token = EXCLUDED.token, token_expires = EXCLUDED.token_expires, last_sync_date = EXCLUDED.last_sync_date, patient_id = EXCLUDED.patient_id, contract_id = EXCLUDED.contract_id, is_valid = EXCLUDED.is_valid, sync_success_msg_sent = EXCLUDED.sync_success_msg_sent
+		INSERT INTO libre_clients (id, email, password, token, token_expires, account_id, last_sync_date, patient_id, contract_id, is_valid, sync_success_msg_sent)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) ON CONFLICT (id)
+		DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, token = EXCLUDED.token, token_expires = EXCLUDED.token_expires, account_id = EXCLUDED.account_id, last_sync_date = EXCLUDED.last_sync_date, patient_id = EXCLUDED.patient_id, contract_id = EXCLUDED.contract_id, is_valid = EXCLUDED.is_valid, sync_success_msg_sent = EXCLUDED.sync_success_msg_sent
 	`
-	_, err := db.Exec(query, lc.ID, lc.Email, lc.Password, lc.Token, lc.TokenExpires, lc.LastSyncDate, lc.PatientID, lc.ContractID, lc.SyncErrMsgReadyToSend, lc.SyncSuccessMsgSent)
+	_, err := db.Exec(query, lc.ID, lc.Email, lc.Password, lc.Token, lc.TokenExpires, lc.AccountID, lc.LastSyncDate, lc.PatientID, lc.ContractID, lc.SyncErrMsgReadyToSend, lc.SyncSuccessMsgSent)
 	if err != nil {
 		return fmt.Errorf("failed to save libre client: %w", err)
 	}
@@ -150,13 +154,20 @@ func (lc *LibreClient) sendSuccessMessageToChat(mc *maigo.Client) {
 }
 
 func (lc *LibreClient) fetchToken(mc *maigo.Client) error {
-	user, err := llum.Login(lc.Email, lc.Password)
+	loginResponse, err := llum.Login(lc.Email, lc.Password)
 	if err != nil {
 		lc.sendErrMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Не удалось войти в систему, проверьте логин и пароль. Ошибка: %s", err.Error()))
 		return fmt.Errorf("fetch token: %w", err)
 	}
-	lc.Token = &user.AuthTicket.Token
-	lc.TokenExpires = &user.AuthTicket.Expires.Time
+	lc.Token = &loginResponse.AuthTicket.Token
+	lc.TokenExpires = &loginResponse.AuthTicket.Expires.Time
+
+	hasher := sha256.New()
+	hasher.Write([]byte(loginResponse.User.ID.String()))
+	hashedData := hasher.Sum(nil)
+	hexHash := hex.EncodeToString(hashedData)
+	lc.AccountID = &hexHash
+
 	err = lc.Save()
 	if err != nil {
 		return fmt.Errorf("fetch token: %w", err)
@@ -165,7 +176,7 @@ func (lc *LibreClient) fetchToken(mc *maigo.Client) error {
 }
 
 func (lc *LibreClient) fetchPatientID(mc *maigo.Client) error {
-	connections, err := llum.FetchConnections(*lc.Token)
+	connections, err := llum.FetchConnections(*lc.Token, *lc.AccountID)
 	if err != nil {
 		lc.sendErrMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Ошибка: %s", err.Error()))
 		return fmt.Errorf("fetch patient id: %w", err)
@@ -197,7 +208,7 @@ func getLatestTimestamp(data []libreclient.GlucoseMeasurement) *time.Time {
 }
 
 func (lc *LibreClient) fetchData() (*libreclient.GraphData, error) {
-	graph, err := llum.FetchData(*lc.PatientID, *lc.Token)
+	graph, err := llum.FetchData(*lc.PatientID, *lc.Token, *lc.AccountID)
 	if errors.Is(err, libreclient.ErrInvalidAuthSession) {
 		lc.Token = nil
 		err = lc.Save()

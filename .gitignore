@@ -30,3 +30,4 @@ node_modules/
 test.rest
 config.pkl
 .env
+test/

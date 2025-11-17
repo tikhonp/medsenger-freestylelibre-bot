@@ -9,24 +9,28 @@ import (
 
 type (
 	User struct {
-		ID                    uuid.UUID  `json:"id"`
-		FirstName             string     `json:"firstName"`
-		LastName              string     `json:"lastName"`
-		Email                 string     `json:"email"`
-		Country               string     `json:"country"`
-		UILanguage            string     `json:"uiLanguage"`
-		CommunicationLanguage string     `json:"communicationLanguage"`
-		AccountType           string     `json:"accountType"`
-		Uom                   string     `json:"uom"`
-		DateFormat            string     `json:"dateFormat"`
-		TimeFormat            string     `json:"timeFormat"`
-		AuthTicket            AuthTicket `json:"authTicket"`
+		ID                    uuid.UUID `json:"id"`
+		FirstName             string    `json:"firstName"`
+		LastName              string    `json:"lastName"`
+		Email                 string    `json:"email"`
+		Country               string    `json:"country"`
+		UILanguage            string    `json:"uiLanguage"`
+		CommunicationLanguage string    `json:"communicationLanguage"`
+		AccountType           string    `json:"accountType"`
+		Uom                   string    `json:"uom"`
+		DateFormat            string    `json:"dateFormat"`
+		TimeFormat            string    `json:"timeFormat"`
 	}
 
 	AuthTicket struct {
 		Token    string         `json:"token"`
 		Expires  util.Timestamp `json:"expires"`
 		Duration util.Timestamp `json:"duration"`
+	}
+
+	LoginRespose struct {
+		User       User       `json:"user"`
+		AuthTicket AuthTicket `json:"authTicket"`
 	}
 
 	LibreConnection struct {
@@ -68,3 +72,4 @@ type (
 func (gm *GlucoseMeasurement) ValueAsString() string {
 	return strconv.FormatFloat(gm.Value, 'f', 2, 64)
 }
+

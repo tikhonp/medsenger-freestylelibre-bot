@@ -19,7 +19,7 @@ services:
 
   db:
     container_name: libre-bot-dev-db
-    image: postgres
+    image: postgres:17
     restart: always
     volumes:
       - db-data:/var/lib/postgresql/data

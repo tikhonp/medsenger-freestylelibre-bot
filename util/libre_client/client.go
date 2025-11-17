@@ -23,7 +23,7 @@ const host = "https://api.libreview.ru"
 
 // LibreLinkUpManager is a client for the LibreLinkUp API.
 //
-// SDK client written based on this dump: https://gist.github.com/khskekec/6c13ba01b10d3018d816706a32ae8ab2
+// SDK client written inspired by this dump: https://gist.github.com/khskekec/6c13ba01b10d3018d816706a32ae8ab2
 type LibreLinkUpManager struct{}
 
 func NewLibreLinkUpManager() *LibreLinkUpManager {
@@ -31,14 +31,16 @@ func NewLibreLinkUpManager() *LibreLinkUpManager {
 }
 
 func setDefaultHeaders(r *http.Request) {
-	r.Header.Set("cache-control", "no-cache")
-	r.Header.Set("connection", "Keep-Alive")
-	r.Header.Set("content-type", "application/json")
-	r.Header.Set("product", "llu.android")
-	r.Header.Set("version", "4.7")
+	r.Header.Set("Accept", "*/*")
+	r.Header.Set("Accept-Encoding", "gzip, deflate, br")
+	r.Header.Set("Connection", "keep-alive")
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("product", "llu.ios")
+	r.Header.Set("User-Agent", "Mozilla/5.0 (iPhone; CPU OS 16_2 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/16.2 Mobile/10A5355d Safari/8536.25")
+	r.Header.Set("version", "4.16.0")
 }
 
-func (lm LibreLinkUpManager) makeRequest(method, path string, body io.Reader, token *string) (*http.Response, error) {
+func (lm LibreLinkUpManager) makeRequest(method, path string, body io.Reader, token, accountID *string) (*http.Response, error) {
 	url := host + path
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
@@ -47,6 +49,11 @@ func (lm LibreLinkUpManager) makeRequest(method, path string, body io.Reader, to
 	setDefaultHeaders(req)
 	if token != nil {
 		req.Header.Set("authorization", "Bearer "+*token)
+	}
+	if accountID != nil {
+		// Account-Id is the SHA-256 hex digest of the user.id UUID
+		//  exactly as returned in the login response (dashes kept, lowercase)
+		req.Header.Set("Account-Id", *accountID)
 	}
 	return http.DefaultClient.Do(req)
 }
@@ -96,7 +103,7 @@ func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 	return &responseData.Data, nil
 }
 
-func (lm LibreLinkUpManager) Login(email, password string) (*User, error) {
+func (lm LibreLinkUpManager) Login(email, password string) (*LoginRespose, error) {
 	type request struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -106,15 +113,15 @@ func (lm LibreLinkUpManager) Login(email, password string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := lm.makeRequest(http.MethodPost, "/llu/auth/login", bytes.NewReader(body), nil)
+	resp, err := lm.makeRequest(http.MethodPost, "/llu/auth/login", bytes.NewReader(body), nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return decodeResponse[User](resp)
+	return decodeResponse[LoginRespose](resp)
 }
 
-func (lm LibreLinkUpManager) FetchConnections(token string) ([]LibreConnection, error) {
-	resp, err := lm.makeRequest(http.MethodGet, "/llu/connections", nil, &token)
+func (lm LibreLinkUpManager) FetchConnections(token, accountID string) ([]LibreConnection, error) {
+	resp, err := lm.makeRequest(http.MethodGet, "/llu/connections", nil, &token, &accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -125,9 +132,9 @@ func (lm LibreLinkUpManager) FetchConnections(token string) ([]LibreConnection, 
 	return *data, nil
 }
 
-func (lm LibreLinkUpManager) FetchData(patientID uuid.UUID, token string) (*GraphData, error) {
+func (lm LibreLinkUpManager) FetchData(patientID uuid.UUID, token, accountID string) (*GraphData, error) {
 	url := fmt.Sprintf("/llu/connections/%s/graph", patientID.String())
-	resp, err := lm.makeRequest(http.MethodGet, url, nil, &token)
+	resp, err := lm.makeRequest(http.MethodGet, url, nil, &token, &accountID)
 	if err != nil {
 		return nil, fmt.Errorf("fetch data: %w", err)
 	}
