@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
@@ -12,11 +10,8 @@ import (
 type SettingsHandler struct{}
 
 func (h SettingsHandler) renderPage(c echo.Context, showAddAccount bool) error {
-	contractID := util.QueryParamInt(c, "contract_id")
-	if contractID == nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "contract_id is required")
-	}
-	contract, err := db.GetContractByID(*contractID)
+	contractID := c.Get("contract_id").(int)
+	contract, err := db.GetContractByID(contractID)
 	if err != nil {
 		return err
 	}
@@ -33,9 +28,8 @@ func (h SettingsHandler) Get(c echo.Context) error {
 }
 
 type userCredentials struct {
-	Email      string `form:"email" validate:"required"`
-	Password   string `form:"password" validate:"required"`
-	ContractID int    `form:"contract_id" validate:"required"`
+	Email    string `form:"email" validate:"required"`
+	Password string `form:"password" validate:"required"`
 }
 
 func (h SettingsHandler) Post(c echo.Context) error {
@@ -46,7 +40,8 @@ func (h SettingsHandler) Post(c echo.Context) error {
 	if err := c.Validate(uc); err != nil {
 		return err
 	}
-	if _, err := db.NewLibreClient(uc.Email, uc.Password, uc.ContractID); err != nil {
+	contractID := c.Get("contract_id").(int)
+	if _, err := db.NewLibreClient(uc.Email, uc.Password, contractID); err != nil {
 		return err
 	}
 	return h.renderPage(c, false)

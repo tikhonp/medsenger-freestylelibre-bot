@@ -7,21 +7,11 @@ import (
 	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 )
 
-type contractIDModel struct {
-	ContractID int `json:"contract_id" validate:"required"`
-}
-
 type RemoveHandler struct{}
 
 func (h RemoveHandler) Handle(c echo.Context) error {
-	m := new(contractIDModel)
-	if err := c.Bind(m); err != nil {
-		return err
-	}
-	if err := c.Validate(m); err != nil {
-		return err
-	}
-	if err := db.MarkInactiveContractWithID(m.ContractID); err != nil {
+	contractID := c.Get("contract_id").(int)
+	if err := db.MarkInactiveContractWithID(contractID); err != nil {
 		return err
 	}
 	return c.String(http.StatusCreated, "ok")

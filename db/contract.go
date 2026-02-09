@@ -13,7 +13,6 @@ import (
 type Contract struct {
 	ID            int     `db:"id"`
 	IsActive      bool    `db:"is_active"`
-	AgentToken    *string `db:"agent_token"`
 	PatientName   *string `db:"patient_name"`
 	PatientEmail  *string `db:"patient_email"`
 	Locale        *string `db:"locale"`
@@ -23,11 +22,11 @@ type Contract struct {
 // Save on Contract saves structure to database.
 func (c *Contract) Save() error {
 	const query = `
-		INSERT INTO contracts (id, is_active, agent_token, patient_name, patient_email, locale, libre_client)
-		VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id)
-		DO UPDATE SET is_active = EXCLUDED.is_active, agent_token = EXCLUDED.agent_token, patient_name = EXCLUDED.patient_name, patient_email = EXCLUDED.patient_email, locale = EXCLUDED.locale, libre_client = EXCLUDED.libre_client
+		INSERT INTO contracts (id, is_active, patient_name, patient_email, locale, libre_client)
+		VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (id)
+		DO UPDATE SET is_active = EXCLUDED.is_active, patient_name = EXCLUDED.patient_name, patient_email = EXCLUDED.patient_email, locale = EXCLUDED.locale, libre_client = EXCLUDED.libre_client
 	`
-	_, err := db.Exec(query, c.ID, c.IsActive, c.AgentToken, c.PatientName, c.PatientEmail, c.Locale, c.LibreClientID)
+	_, err := db.Exec(query, c.ID, c.IsActive, c.PatientName, c.PatientEmail, c.Locale, c.LibreClientID)
 	return err
 }
 
@@ -63,4 +62,3 @@ func GetContractByID(id int) (*Contract, error) {
 	}
 	return contract, err
 }
-

@@ -9,7 +9,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/TikhonP/maigo"
+	"github.com/tikhonp/maigo"
 	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
 	libreclient "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"

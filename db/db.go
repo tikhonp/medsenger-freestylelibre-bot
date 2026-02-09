@@ -35,6 +35,8 @@ const schema = `
 	ALTER TABLE public.libre_clients ADD COLUMN IF NOT EXISTS sync_success_msg_sent BOOLEAN NOT NULL DEFAULT FALSE;
 
 	ALTER TABLE public.libre_clients ADD COLUMN IF NOT EXISTS account_id VARCHAR(256) DEFAULT NULL;
+
+	ALTER TABLE public.contracts DROP COLUMN IF EXISTS agent_token;
 `
 
 // db is a global database.

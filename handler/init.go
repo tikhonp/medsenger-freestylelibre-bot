@@ -4,21 +4,17 @@ package handler
 import (
 	"net/http"
 
-	"github.com/TikhonP/maigo"
 	"github.com/getsentry/sentry-go"
 	"github.com/labstack/echo/v4"
+	"github.com/tikhonp/maigo"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 )
 
 type initModel struct {
-	ContractID        int    `json:"contract_id" validate:"required"`
-	ClinicID          int    `json:"clinic_id" validate:"required"`
-	AgentToken        string `json:"agent_token" validate:"required"`
-	PatientAgentToken string `json:"patient_agent_token" validate:"required"`
-	DoctorAgentToken  string `json:"doctor_agent_token" validate:"required"`
-	AgentID           int    `json:"agent_id" validate:"required"`
-	AgentName         string `json:"agent_name" validate:"required"`
-	Locale            string `json:"locale" validate:"required"`
+	ClinicID  int    `json:"clinic_id" validate:"required"`
+	AgentID   int    `json:"agent_id" validate:"required"`
+	AgentName string `json:"agent_name" validate:"required"`
+	Locale    string `json:"locale" validate:"required"`
 }
 
 type InitHandler struct {
@@ -61,11 +57,11 @@ func (h InitHandler) Handle(c echo.Context) error {
 	if err := c.Validate(m); err != nil {
 		return err
 	}
+	contractID := c.Get("contract_id").(int)
 	contract := db.Contract{
-		ID:         m.ContractID,
-		IsActive:   true,
-		AgentToken: &m.AgentToken,
-		Locale:     &m.Locale,
+		ID:       contractID,
+		IsActive: true,
+		Locale:   &m.Locale,
 	}
 	if err := contract.Save(); err != nil {
 		return err
