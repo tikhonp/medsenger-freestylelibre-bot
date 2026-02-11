@@ -39,19 +39,16 @@ func (s *Server) Listen() {
 	app.HideBanner = true
 	app.Validator = util.NewDefaultValidator()
 
-	if app.Debug {
-		app.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-			Format: "[${time_rfc3339}] ${status} ${method} ${path} (${remote_ip}) ${latency_human}\n",
-			Output: app.Logger.Output(),
-		}))
-	} else {
+	if !app.Debug {
 		app.Use(sentryecho.New(sentryecho.Options{
 			Repanic:         true,
 			WaitForDelivery: false,
 			Timeout:         5 * time.Second,
 		}))
-		app.Use(middleware.Logger())
 	}
+	app.Use(middleware.RequestLoggerWithConfig(
+		util.GetRequestLoggerConfig(!app.Debug),
+	))
 	app.Use(middleware.Recover())
 
 	app.File("/styles.css", "public/styles.css")
