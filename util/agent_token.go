@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"slices"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/maigo"
@@ -29,13 +28,7 @@ func processAgentToken(agentToken string, c echo.Context, client *maigo.Client, 
 			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid jwt key role.")
 		}
 	}
-	if data.ContractID != nil {
-		contractID, err := strconv.Atoi(*data.ContractID)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid contract ID in jwt key.")
-		}
-		c.Set("contract_id", contractID)
-	}
+	c.Set("contract_id", data.ContractID)
 	return nil
 }
 
