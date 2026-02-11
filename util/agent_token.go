@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"slices"
 	"strconv"
@@ -20,6 +21,7 @@ type agentTokenModel struct {
 func processAgentToken(agentToken string, c echo.Context, client *maigo.Client, roles []maigo.RequestRole) error {
 	data, err := client.DecodeAgentJWT(agentToken)
 	if err != nil {
+		log.Printf("Failed to decode agent JWT: %s", err.Error())
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid jwt key.")
 	}
 	for _, role := range roles {
