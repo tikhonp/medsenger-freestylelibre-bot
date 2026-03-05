@@ -52,7 +52,14 @@ func (s *Server) Listen() {
 	app.Use(middleware.Recover())
 
 	app.File("/styles.css", "public/styles.css")
+
 	app.GET("/", s.root.Handle)
+
+	app.Use(middleware.BodyDump(func(c echo.Context, reqBody []byte, resBody []byte) {
+		println("Request Body:", string(reqBody))
+		println("Response Body:", string(resBody))
+	}))
+
 	app.POST("/init", s.init.Handle, util.AgentTokenJSON(s.client, maigo.RequestRoleSystem))
 	app.POST("/status", s.status.Handle, util.AgentTokenJSON(s.client, maigo.RequestRoleSystem))
 	app.POST("/remove", s.remove.Handle, util.AgentTokenJSON(s.client, maigo.RequestRoleSystem))
