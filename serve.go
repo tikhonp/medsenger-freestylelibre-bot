@@ -55,10 +55,10 @@ func (s *Server) Listen() {
 
 	app.GET("/", s.root.Handle)
 
-	app.Use(middleware.BodyDump(func(c echo.Context, reqBody []byte, resBody []byte) {
-		println("Request Body:", string(reqBody))
-		println("Response Body:", string(resBody))
-	}))
+	// app.Use(middleware.BodyDump(func(c echo.Context, reqBody []byte, resBody []byte) {
+	// 	println("Request Body:", string(reqBody))
+	// 	println("Response Body:", string(resBody))
+	// }))
 
 	app.POST("/init", s.init.Handle, util.AgentTokenJSON(s.client, maigo.RequestRoleSystem))
 	app.POST("/status", s.status.Handle, util.AgentTokenJSON(s.client, maigo.RequestRoleSystem))
