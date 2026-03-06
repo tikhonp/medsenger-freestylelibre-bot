@@ -11,7 +11,10 @@ import (
 type RemoveHandler struct{}
 
 func (h RemoveHandler) Handle(c echo.Context) error {
-	contractID := util.GetContractID(c)
+	contractID, err := util.GetContractID(c)
+	if err != nil {
+		return err
+	}
 	if err := db.MarkInactiveContractWithID(contractID); err != nil {
 		return err
 	}

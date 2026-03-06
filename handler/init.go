@@ -58,7 +58,10 @@ func (h InitHandler) Handle(c echo.Context) error {
 	if err := c.Validate(m); err != nil {
 		return err
 	}
-	contractID := util.GetContractID(c)
+	contractID, err := util.GetContractID(c)
+	if err != nil {
+		return err
+	}
 	contract := db.Contract{
 		ID:       contractID,
 		IsActive: true,

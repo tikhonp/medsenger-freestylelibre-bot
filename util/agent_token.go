@@ -4,6 +4,7 @@ package util
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -19,8 +20,14 @@ type agentTokenModel struct {
 	AgentToken string `json:"agent_token" validate:"required"`
 }
 
-func GetContractID(c echo.Context) int {
-	return c.Get(contractIDKey).(int)
+// GetContractID retrieves contract ID from echo.Context,
+// which is set by AgentTokenJSON or AgentTokenGetParam middleware.
+func GetContractID(c echo.Context) (int, error) {
+	contractID, ok := c.Get(contractIDKey).(int)
+	if ok {
+		return contractID, nil
+	}
+	return 0, errors.New("no contract ID in context")
 }
 
 func processAgentToken(agentToken string, c echo.Context, client *maigo.Client, roles []maigo.RequestRole) error {
@@ -34,7 +41,9 @@ func processAgentToken(agentToken string, c echo.Context, client *maigo.Client, 
 			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid jwt key role.")
 		}
 	}
-	c.Set(contractIDKey, *data.ContractID)
+	if data.ContractID != nil {
+		c.Set(contractIDKey, *data.ContractID)
+	}
 	return nil
 }
 
