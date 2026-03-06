@@ -13,8 +13,14 @@ import (
 	"github.com/tikhonp/maigo"
 )
 
+const contractIDKey = "contract_id"
+
 type agentTokenModel struct {
 	AgentToken string `json:"agent_token" validate:"required"`
+}
+
+func GetContractID(c echo.Context) int {
+	return c.Get(contractIDKey).(int)
 }
 
 func processAgentToken(agentToken string, c echo.Context, client *maigo.Client, roles []maigo.RequestRole) error {
@@ -28,7 +34,7 @@ func processAgentToken(agentToken string, c echo.Context, client *maigo.Client, 
 			return echo.NewHTTPError(http.StatusUnauthorized, "Invalid jwt key role.")
 		}
 	}
-	c.Set("contract_id", data.ContractID)
+	c.Set(contractIDKey, *data.ContractID)
 	return nil
 }
 

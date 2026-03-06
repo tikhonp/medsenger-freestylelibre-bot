@@ -10,7 +10,7 @@ import (
 type SettingsHandler struct{}
 
 func (h SettingsHandler) renderPage(c echo.Context, showAddAccount bool) error {
-	contractID := c.Get("contract_id").(int)
+	contractID := util.GetContractID(c)
 	contract, err := db.GetContractByID(contractID)
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func (h SettingsHandler) Post(c echo.Context) error {
 	if err := c.Validate(uc); err != nil {
 		return err
 	}
-	contractID := c.Get("contract_id").(int)
+	contractID := util.GetContractID(c)
 	if _, err := db.NewLibreClient(uc.Email, uc.Password, contractID); err != nil {
 		return err
 	}

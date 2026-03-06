@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/tikhonp/maigo"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
+	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 )
 
 type initModel struct {
@@ -57,7 +58,7 @@ func (h InitHandler) Handle(c echo.Context) error {
 	if err := c.Validate(m); err != nil {
 		return err
 	}
-	contractID := c.Get("contract_id").(int)
+	contractID := util.GetContractID(c)
 	contract := db.Contract{
 		ID:       contractID,
 		IsActive: true,
