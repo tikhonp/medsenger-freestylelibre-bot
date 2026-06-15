@@ -16,7 +16,17 @@ import (
 var (
 	ErrIncorrectUsernameOrPassword = errors.New("incorrect username/password")
 	ErrInvalidAuthSession          = errors.New("invalid auth session")
+	// ErrServiceUnavailable is returned when LibreLinkUp responds with status
+	// 911, meaning the service is temporarily unavailable (maintenance / rate
+	// limit). It is transient and server-side, so callers should just retry on
+	// the next fetch cycle rather than treat it as a credentials or code error.
+	ErrServiceUnavailable = errors.New("libre service temporarily unavailable")
 )
+
+// statusServiceUnavailable is the LibreLinkUp "temporarily unavailable" status.
+// It arrives either as the HTTP status code or as the "status" field of an
+// otherwise HTTP 200 response body.
+const statusServiceUnavailable = 911
 
 // host set for rus region. Default is "https://api.libreview.io"
 const host = "https://api.libreview.ru"
@@ -60,6 +70,9 @@ func (lm LibreLinkUpManager) makeRequest(method, path string, body io.Reader, to
 
 func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 	if resp.StatusCode != http.StatusOK {
+		if resp.StatusCode == statusServiceUnavailable {
+			return nil, ErrServiceUnavailable
+		}
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("status code: %d", resp.StatusCode)
@@ -85,6 +98,9 @@ func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 		return nil, err
 	}
 	if responseData.Status != 0 {
+		if responseData.Status == statusServiceUnavailable {
+			return nil, ErrServiceUnavailable
+		}
 		type errorResponseData struct {
 			Error struct {
 				Message string `json:"message"`
@@ -97,6 +113,11 @@ func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 		}
 		if errorData.Error.Message == "incorrect username/password" {
 			return nil, ErrIncorrectUsernameOrPassword
+		}
+		if errorData.Error.Message == "" {
+			// Avoid surfacing an empty, useless error when the API reports a
+			// non-zero status without a message (e.g. {"status": <n>}).
+			return nil, fmt.Errorf("libre api error: status %d", responseData.Status)
 		}
 		return nil, errors.New(errorData.Error.Message)
 	}

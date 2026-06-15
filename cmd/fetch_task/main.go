@@ -15,6 +15,11 @@ import (
 
 var sentryExcludedErrors = []error{
 	libreclient.ErrIncorrectUsernameOrPassword,
+	// Transient, server-side: LibreLinkUp is temporarily down (status 911).
+	// The worker retries on the next tick, so this is not actionable noise.
+	libreclient.ErrServiceUnavailable,
+	// Expected control flow: the token is cleared and re-fetched next cycle.
+	libreclient.ErrInvalidAuthSession,
 	db.ErrLibreAccountConnectionsIsEmpty,
 }
 
