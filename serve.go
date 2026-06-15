@@ -2,12 +2,14 @@
 package freestylelibre
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 
 	sentryecho "github.com/getsentry/sentry-go/echo"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 	"github.com/tikhonp/maigo"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/handler"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
@@ -35,11 +37,9 @@ func NewServer(cfg *util.Server) *Server {
 func (s *Server) Listen() {
 	app := echo.New()
 
-	app.Debug = s.cfg.Debug
-	app.HideBanner = true
 	app.Validator = util.NewDefaultValidator()
 
-	if !app.Debug {
+	if !s.cfg.Debug {
 		app.Use(sentryecho.New(sentryecho.Options{
 			Repanic:         true,
 			WaitForDelivery: false,
@@ -47,7 +47,7 @@ func (s *Server) Listen() {
 		}))
 	}
 	app.Use(middleware.RequestLoggerWithConfig(
-		util.GetRequestLoggerConfig(!app.Debug),
+		util.GetRequestLoggerConfig(!s.cfg.Debug),
 	))
 	app.Use(middleware.Recover())
 
@@ -71,5 +71,8 @@ func (s *Server) Listen() {
 	app.POST("/setup", s.settings.Post, util.AgentTokenGetParam(s.client))
 
 	addr := fmt.Sprintf(":%d", s.cfg.Port)
-	app.Logger.Fatal(app.Start(addr))
+	sc := echo.StartConfig{Address: addr, HideBanner: true}
+	if err := sc.Start(context.Background(), app); err != nil {
+		log.Fatal(err)
+	}
 }

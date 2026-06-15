@@ -31,3 +31,4 @@ test.rest
 config.pkl
 .env
 test/
+CLAUDE.md

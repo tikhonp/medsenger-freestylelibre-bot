@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/view"
@@ -9,7 +9,7 @@ import (
 
 type SettingsHandler struct{}
 
-func (h SettingsHandler) renderPage(c echo.Context, showAddAccount bool) error {
+func (h SettingsHandler) renderPage(c *echo.Context, showAddAccount bool) error {
 	contractID, err := util.GetContractID(c)
 	if err != nil {
 		return err
@@ -26,7 +26,7 @@ func (h SettingsHandler) renderPage(c echo.Context, showAddAccount bool) error {
 	)
 }
 
-func (h SettingsHandler) Get(c echo.Context) error {
+func (h SettingsHandler) Get(c *echo.Context) error {
 	return h.renderPage(c, true)
 }
 
@@ -35,7 +35,7 @@ type userCredentials struct {
 	Password string `form:"password" validate:"required"`
 }
 
-func (h SettingsHandler) Post(c echo.Context) error {
+func (h SettingsHandler) Post(c *echo.Context) error {
 	var uc userCredentials
 	if err := c.Bind(&uc); err != nil {
 		return err

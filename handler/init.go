@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/getsentry/sentry-go"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/tikhonp/maigo"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
@@ -22,18 +22,18 @@ type InitHandler struct {
 	MaigoClient *maigo.Client
 }
 
-func (h InitHandler) fetchContractDataOnInit(c db.Contract, ctx echo.Context) {
+func (h InitHandler) fetchContractDataOnInit(c db.Contract, ctx *echo.Context) {
 	ci, err := h.MaigoClient.GetContractInfo(c.ID)
 	if err != nil {
 		sentry.CaptureException(err)
-		ctx.Logger().Error(err)
+		ctx.Logger().Error(err.Error())
 		return
 	}
 	c.PatientName = &ci.PatientName
 	c.PatientEmail = &ci.PatientEmail
 	if err := c.Save(); err != nil {
 		sentry.CaptureException(err)
-		ctx.Logger().Error(err)
+		ctx.Logger().Error(err.Error())
 		return
 	}
 	_, err = h.MaigoClient.SendMessage(
@@ -44,13 +44,13 @@ func (h InitHandler) fetchContractDataOnInit(c db.Contract, ctx echo.Context) {
 	)
 	if err != nil {
 		sentry.CaptureException(err)
-		ctx.Logger().Error(err)
+		ctx.Logger().Error(err.Error())
 		return
 	}
 	ctx.Logger().Info("Successfully fetched contract data")
 }
 
-func (h InitHandler) Handle(c echo.Context) error {
+func (h InitHandler) Handle(c *echo.Context) error {
 	m := new(initModel)
 	if err := c.Bind(m); err != nil {
 		return err

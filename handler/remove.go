@@ -3,14 +3,14 @@ package handler
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 )
 
 type RemoveHandler struct{}
 
-func (h RemoveHandler) Handle(c echo.Context) error {
+func (h RemoveHandler) Handle(c *echo.Context) error {
 	contractID, err := util.GetContractID(c)
 	if err != nil {
 		return err

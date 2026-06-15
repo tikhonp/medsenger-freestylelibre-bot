@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/tikhonp/maigo"
 )
 
@@ -22,7 +22,7 @@ type agentTokenModel struct {
 
 // GetContractID retrieves contract ID from echo.Context,
 // which is set by AgentTokenJSON or AgentTokenGetParam middleware.
-func GetContractID(c echo.Context) (int, error) {
+func GetContractID(c *echo.Context) (int, error) {
 	contractID, ok := c.Get(contractIDKey).(int)
 	if ok {
 		return contractID, nil
@@ -30,7 +30,7 @@ func GetContractID(c echo.Context) (int, error) {
 	return 0, errors.New("no contract ID in context")
 }
 
-func processAgentToken(agentToken string, c echo.Context, client *maigo.Client, roles []maigo.RequestRole) error {
+func processAgentToken(agentToken string, c *echo.Context, client *maigo.Client, roles []maigo.RequestRole) error {
 	data, err := client.DecodeAgentJWT(agentToken)
 	if err != nil {
 		log.Printf("Failed to decode agent JWT: %s", err.Error())
@@ -49,7 +49,7 @@ func processAgentToken(agentToken string, c echo.Context, client *maigo.Client, 
 
 func AgentTokenJSON(client *maigo.Client, roles ...maigo.RequestRole) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			// Workaround to read request body twice
 			req := c.Request()
 			bodyBytes, _ := io.ReadAll(req.Body)
@@ -76,7 +76,7 @@ func AgentTokenJSON(client *maigo.Client, roles ...maigo.RequestRole) echo.Middl
 
 func AgentTokenGetParam(client *maigo.Client, roles ...maigo.RequestRole) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			agentToken := c.QueryParam("agent_token")
 			if err := processAgentToken(agentToken, c, client, roles); err != nil {
 				return err
