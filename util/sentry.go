@@ -17,7 +17,6 @@ func StartSentry(dsn string) error {
 		SendDefaultPII:   true,
 		EnableTracing:    true,
 		TracesSampleRate: 1.0,
-		EnableLogs:       true,
 		AttachStacktrace: true,
 		SampleRate:       1.0,
 		Release:          releaseVersion,

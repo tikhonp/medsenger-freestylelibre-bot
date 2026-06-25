@@ -1,8 +1,6 @@
 package libreclient
 
 import (
-	"strconv"
-
 	"github.com/google/uuid"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 )
@@ -68,8 +66,3 @@ type (
 		Mesurements []GlucoseMeasurement `json:"graphData"`
 	}
 )
-
-func (gm *GlucoseMeasurement) ValueAsString() string {
-	return strconv.FormatFloat(gm.Value, 'f', 2, 64)
-}
-

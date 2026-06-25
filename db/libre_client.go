@@ -260,7 +260,7 @@ func (lc *LibreClient) FetchData(mc *maigo.Client) error {
 	var records []maigo.Record
 	for _, item := range graph.Mesurements {
 		if lc.LastSyncDate == nil || item.FactoryTimestamp.After(*lc.LastSyncDate) {
-			records = append(records, maigo.NewRecord("glukose", item.ValueAsString(), item.FactoryTimestamp.Time))
+			records = append(records, maigo.NewRecord("glukose", item.Value, item.FactoryTimestamp.Time))
 		}
 	}
 	if len(records) > 0 {

@@ -1,17 +1,17 @@
 module github.com/tikhonp/medsenger-freestylelibre-bot
 
-go 1.25.0
+go 1.26
 
 require (
 	github.com/a-h/templ v0.3.1020
-	github.com/getsentry/sentry-go v0.46.2
-	github.com/getsentry/sentry-go/echo v0.46.2
+	github.com/getsentry/sentry-go v0.47.0
+	github.com/getsentry/sentry-go/echo v0.47.0
 	github.com/go-playground/validator/v10 v10.30.3
 	github.com/google/uuid v1.6.0
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/labstack/echo/v5 v5.2.0
+	github.com/labstack/echo/v5 v5.2.1
 	github.com/lib/pq v1.12.3
-	github.com/tikhonp/maigo v0.5.1
+	github.com/tikhonp/maigo v1.0.0
 )
 
 require (
@@ -25,4 +25,7 @@ require (
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260622175928-b703f567277d // indirect
+	google.golang.org/grpc v1.81.1 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 )
