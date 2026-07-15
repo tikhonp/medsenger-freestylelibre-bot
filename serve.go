@@ -23,6 +23,7 @@ type Server struct {
 	status   handler.StatusHandler
 	remove   handler.RemoveHandler
 	settings handler.SettingsHandler
+	scenario handler.ScenarioCapabilitiesHandler
 }
 
 func NewServer(cfg *util.Server) *Server {
@@ -63,6 +64,9 @@ func (s *Server) Listen() {
 	app.POST("/init", s.init.Handle, util.AgentTokenJSON(s.client, maigo.RequestRoleSystem))
 	app.POST("/status", s.status.Handle, util.AgentTokenJSON(s.client, maigo.RequestRoleSystem))
 	app.POST("/remove", s.remove.Handle, util.AgentTokenJSON(s.client, maigo.RequestRoleSystem))
+	app.GET("/scenario-capabilities/v1", s.scenario.Capabilities, util.AgentTokenHeader(s.client, maigo.RequestRoleSystem))
+	app.GET("/scenario-capabilities/v1/objects/:object_type", s.scenario.Objects, util.AgentTokenHeader(s.client, maigo.RequestRoleSystem))
+	app.GET("/scenario-capabilities/v1/objects/:object_type/:object_id", s.scenario.Object, util.AgentTokenHeader(s.client, maigo.RequestRoleSystem))
 
 	app.GET("/settings", s.settings.Get, util.AgentTokenGetParam(s.client))
 	app.POST("/settings", s.settings.Post, util.AgentTokenGetParam(s.client))
