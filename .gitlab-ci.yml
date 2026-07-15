@@ -29,4 +29,5 @@ build-multiarch:
 
     - docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=linux/amd64,linux/arm64/v8 --target server-prod -t $REGISTRY/$IMAGE_NAME:server-latest --push .
 
-    - docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=linux/amd64,linux/arm64/v8 --target worker-prod -t $REGISTRY/$IMAGE_NAME:worker-latest --push .
+    # - docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=linux/amd64,linux/arm64/v8 --target worker-prod -t $REGISTRY/$IMAGE_NAME:worker-latest --push .
+    - docker buildx build --build-arg SOURCE_COMMIT="$CI_COMMIT_SHA" --platform=linux/amd64 --target worker-prod -t $REGISTRY/$IMAGE_NAME:worker-latest --push .
