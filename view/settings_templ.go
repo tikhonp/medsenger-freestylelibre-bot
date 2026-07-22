@@ -271,7 +271,7 @@ func Settings(patientName string, lc *db.LibreClient, showConnectForm bool) temp
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = Base("Подключение КТГ-монитора").Render(templ.WithChildren(ctx, templ_7745c5c3_Var9), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Base("Подключение глюкометра FreeStyle Libre").Render(templ.WithChildren(ctx, templ_7745c5c3_Var9), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

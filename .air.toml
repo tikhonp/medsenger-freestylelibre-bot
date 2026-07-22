@@ -4,7 +4,7 @@ tmp_dir = "/tmp"
 [build]
 pre_cmd = ["templ generate", "go build -o /bin/fetch_task ./cmd/fetch_task/main.go"]
 cmd = "go build -o /tmp/main ./cmd/server/main.go"
-bin = "/tmp/main"
+entrypoint = "/tmp/main"
 include_ext = ["go", "templ"]
 exclude_regex = ["_templ\\.go"]
 exclude_dir = ["pkl", "internal/db/migrations", "public", "view/css", "test"]
