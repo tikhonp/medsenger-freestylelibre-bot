@@ -14,7 +14,7 @@ func StartSentry(dsn string) error {
 	return sentry.Init(sentry.ClientOptions{
 		Dsn:              dsn,
 		Debug:            false,
-		SendDefaultPII:   true,
+		DataCollection:   &sentry.DataCollection{},
 		EnableTracing:    true,
 		TracesSampleRate: 1.0,
 		AttachStacktrace: true,
