@@ -4,7 +4,7 @@ workflow:
       when: always
     - when: never
 
-image: docker:28
+image: docker:29
 
 services:
   - docker:dind
