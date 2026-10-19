@@ -20,6 +20,9 @@ var sentryExcludedErrors = []error{
 	libreclient.ErrServiceUnavailable,
 	// Expected control flow: the token is cleared and re-fetched next cycle.
 	libreclient.ErrInvalidAuthSession,
+	// The patient must accept new terms in the LibreLinkUp app; they are
+	// notified in chat, there is nothing for us to fix.
+	libreclient.ErrAdditionalActionRequired,
 	db.ErrLibreAccountConnectionsIsEmpty,
 }
 

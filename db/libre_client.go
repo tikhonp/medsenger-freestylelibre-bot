@@ -156,10 +156,14 @@ func (lc *LibreClient) sendSuccessMessageToChat(mc *maigo.Client) {
 func (lc *LibreClient) fetchToken(mc *maigo.Client) error {
 	loginResponse, err := llum.Login(lc.Email, lc.Password)
 	if err != nil {
-		// A 911 (service temporarily unavailable) is not a credentials problem,
-		// so don't alarm the patient with a "check your login and password"
-		// message — it will recover on a later fetch cycle.
-		if !errors.Is(err, libreclient.ErrServiceUnavailable) {
+		switch {
+		case errors.Is(err, libreclient.ErrServiceUnavailable):
+			// A 911 (service temporarily unavailable) is not a credentials problem,
+			// so don't alarm the patient with a "check your login and password"
+			// message — it will recover on a later fetch cycle.
+		case errors.Is(err, libreclient.ErrAdditionalActionRequired):
+			lc.sendErrMessageToChat(mc, "Ошибка синхронизации с сервисом Libre Link Up. Откройте приложение LibreLinkUp, войдите в аккаунт и примите обновлённые условия использования. После этого синхронизация возобновится автоматически.")
+		default:
 			lc.sendErrMessageToChat(mc, fmt.Sprintf("Ошибка синхронизации с сервисом Libre Link Up. Не удалось войти в систему, проверьте логин и пароль. Ошибка: %s", err.Error()))
 		}
 		return fmt.Errorf("fetch token: %w", err)

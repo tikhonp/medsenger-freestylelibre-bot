@@ -21,12 +21,21 @@ var (
 	// limit). It is transient and server-side, so callers should just retry on
 	// the next fetch cycle rather than treat it as a credentials or code error.
 	ErrServiceUnavailable = errors.New("libre service temporarily unavailable")
+	// ErrAdditionalActionRequired is returned when LibreLinkUp responds with
+	// status 4: the account must complete a step in the LibreLinkUp app (usually
+	// accepting updated terms of use) before it can log in. Only the patient can
+	// resolve it.
+	ErrAdditionalActionRequired = errors.New("libre account requires additional action in the LibreLinkUp app")
 )
 
 // statusServiceUnavailable is the LibreLinkUp "temporarily unavailable" status.
 // It arrives either as the HTTP status code or as the "status" field of an
 // otherwise HTTP 200 response body.
 const statusServiceUnavailable = 911
+
+// statusAdditionalActionRequired is the LibreLinkUp "complete a step in the app"
+// status, e.g. accept updated terms of use. The step is in data.step.
+const statusAdditionalActionRequired = 4
 
 // host set for rus region. Default is "https://api.libreview.io"
 const host = "https://api.libreview.ru"
@@ -100,6 +109,17 @@ func decodeResponse[Response any](resp *http.Response) (*Response, error) {
 	if responseData.Status != 0 {
 		if responseData.Status == statusServiceUnavailable {
 			return nil, ErrServiceUnavailable
+		}
+		if responseData.Status == statusAdditionalActionRequired {
+			var stepData struct {
+				Data struct {
+					Step struct {
+						Type string `json:"type"`
+					} `json:"step"`
+				} `json:"data"`
+			}
+			_ = json.Unmarshal(b.Bytes(), &stepData)
+			return nil, fmt.Errorf("%w (step: %s)", ErrAdditionalActionRequired, stepData.Data.Step.Type)
 		}
 		type errorResponseData struct {
 			Error struct {
