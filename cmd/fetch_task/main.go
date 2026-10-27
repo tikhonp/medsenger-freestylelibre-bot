@@ -6,8 +6,8 @@ import (
 	"slices"
 	"time"
 
-	"github.com/tikhonp/maigo"
 	"github.com/getsentry/sentry-go"
+	"github.com/tikhonp/maigo"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/db"
 	"github.com/tikhonp/medsenger-freestylelibre-bot/util"
 	libreclient "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"

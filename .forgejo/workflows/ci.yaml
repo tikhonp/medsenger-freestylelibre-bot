@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # The runner mounts persistent volumes at the tool cache, the module
+      # cache and the build cache, so Go and the modules are downloaded once,
+      # not per job. A download that stalls fails its step within the timeout
+      # instead of holding the job for an hour.
+      - uses: actions/setup-go@v7
+        timeout-minutes: 10
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Download modules
+        timeout-minutes: 10
+        run: go mod download
+
+      # The version in go.mod.
+      - name: Generated templ files are up to date
+        run: |
+          go run github.com/a-h/templ/cmd/templ@v0.3.1070 generate
+          git diff --exit-code -- '*_templ.go' || (echo "::error::run templ generate and commit the result" && exit 1)
+
+      - name: gofmt
+        run: |
+          out=$(gofmt -l .)
+          if [ -n "$out" ]; then echo "::error::unformatted files:"; echo "$out"; exit 1; fi
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      # Pinned: a new release would bring new findings unasked.
+      - name: golangci-lint
+        timeout-minutes: 20
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.15.0
+
+      # Fails on every vulnerability our code reaches.
+      - name: govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...

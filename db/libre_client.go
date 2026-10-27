@@ -9,9 +9,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/tikhonp/maigo"
 	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
+	"github.com/tikhonp/maigo"
 	libreclient "github.com/tikhonp/medsenger-freestylelibre-bot/util/libre_client"
 )
 
