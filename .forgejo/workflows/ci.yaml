@@ -28,7 +28,7 @@ jobs:
       # The version in go.mod.
       - name: Generated templ files are up to date
         run: |
-          go run github.com/a-h/templ/cmd/templ@v0.3.1070 generate
+          go run github.com/a-h/templ/cmd/templ@v0.3.1100 generate
           git diff --exit-code -- '*_templ.go' || (echo "::error::run templ generate and commit the result" && exit 1)
 
       - name: gofmt
